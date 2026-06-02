@@ -1,0 +1,1693 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>VR Low Poly Shooter CQB</title>
+  <!-- A-Frame y Plugins -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.min.js"></script>
+  <!-- A-Frame Extras para Animation Mixer -->
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #000;
+    }
+
+    /* Esconder el botón nativo de VR si lo deseamos, pero dejaremos que A-frame lo maneje para partir la pantalla */
+  </style>
+
+  <style>
+    #log-overlay {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 9999;
+      pointer-events: auto;
+    }
+
+    #log-button {
+      background: red;
+      border: none;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    #inspect-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      background: #0088ff;
+      border: none;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    #vr-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 35px;
+      background-color: rgba(255, 255, 255, 0.1);
+      background-image: url('vr_icon.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      opacity: 0.05;
+      z-index: 9999;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    #hud-overlay {
+      position: absolute;
+      top: 20px;
+      left: 50px;
+      /* Separado del cuadro rojo */
+      position: absolute;
+      top: 20px;
+      left: 50px;
+      z-index: 9998;
+      pointer-events: none;
+      font-family: monospace;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    #hud-fps {
+      color: yellow;
+    }
+
+    #hud-ammo {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      font-size: 30px;
+      color: #00ffcc;
+      z-index: 9998;
+      font-family: monospace;
+      font-weight: bold;
+    }
+
+    /* UI DE VIDAS */
+    #hud-lives {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 9998;
+    }
+
+    .life-dot {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background-color: white;
+      box-shadow: 0 0 5px white;
+      transition: all 0.3s;
+    }
+
+    .life-dot.lost {
+      background-color: transparent;
+      border: 2px solid red;
+      box-shadow: none;
+    }
+
+    #damage-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: red;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9997;
+      transition: opacity 0.2s;
+    }
+
+    #game-over-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.9);
+      color: red;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      font-family: monospace;
+    }
+
+    #game-over-screen h1 {
+      font-size: 50px;
+      margin-bottom: 30px;
+      text-shadow: 0 0 10px red;
+    }
+
+    .go-btn {
+      background: #222;
+      color: white;
+      border: 2px solid red;
+      padding: 15px 30px;
+      font-size: 20px;
+      font-family: monospace;
+      cursor: pointer;
+      margin: 10px;
+      border-radius: 5px;
+    }
+
+    .go-btn:hover {
+      background: red;
+      color: black;
+    }
+  </style>
+
+  <script>
+    AFRAME.registerComponent('shader-warmup', {
+      init: function () {
+        this.el.addEventListener('loaded', () => {
+          console.log("[WARMUP] Forzando compilación de shaders para evitar tirones...");
+          let sceneEl = this.el;
+          let renderer = sceneEl.renderer;
+          let camera = sceneEl.camera;
+
+          if (!renderer || !camera) return;
+
+          let hiddenNodes = [];
+          sceneEl.object3D.traverse((node) => {
+            if (node.isMesh && !node.visible) {
+              node.visible = true;
+              hiddenNodes.push(node);
+            }
+          });
+
+          renderer.compile(sceneEl.object3D, camera);
+
+          hiddenNodes.forEach(node => {
+            node.visible = false;
+          });
+          console.log("[WARMUP] Shaders compilados exitosamente. Juego fluido.");
+        });
+      }
+    });
+
+    window.gameStartTime = performance.now();
+    console.log("================ PERFORMANCE DEBUG ================");
+    console.log("[PERF] Juego iniciado en t=0.00s");
+
+    AFRAME.registerComponent('player-health', {
+      schema: { maxLives: { default: 3 } },
+      init: function () {
+        this.lives = this.data.maxLives;
+        this.damageOverlay = document.getElementById('damage-overlay');
+        this.gameOverScreen = document.getElementById('game-over-screen');
+        this.lifeDots = [
+          document.getElementById('life-1'),
+          document.getElementById('life-2'),
+          document.getElementById('life-3')
+        ];
+        this.el.sceneEl.addEventListener('player-hit', () => this.takeDamage());
+      },
+      takeDamage: function () {
+        if (this.lives <= 0) return;
+        this.lives--;
+
+        this.damageOverlay.style.opacity = '0.5';
+        setTimeout(() => { this.damageOverlay.style.opacity = '0'; }, 200);
+
+        if (this.lifeDots[this.lives]) {
+          this.lifeDots[this.lives].classList.add('lost');
+        }
+
+        if (this.lives <= 0) this.gameOver();
+      },
+      gameOver: function () {
+        this.gameOverScreen.style.display = 'flex';
+        let deathText = document.getElementById('vr-death-text');
+        if (deathText) deathText.setAttribute('visible', 'true');
+        
+        let rig = document.getElementById('rig');
+        if (rig) rig.removeAttribute('gamepad-fps');
+        let manager = document.querySelector('[npc-manager]');
+        if (manager) manager.components['npc-manager'].clearAll();
+      },
+      respawn: function () {
+        this.lives = this.data.maxLives;
+        this.lifeDots.forEach(dot => dot.classList.remove('lost'));
+        this.gameOverScreen.style.display = 'none';
+        
+        let deathText = document.getElementById('vr-death-text');
+        if (deathText) deathText.setAttribute('visible', 'false');
+
+        let rig = document.getElementById('rig');
+        if (rig) rig.setAttribute('gamepad-fps', '');
+        let manager = document.querySelector('[npc-manager]');
+        if (manager) manager.components['npc-manager'].spawnWave();
+      }
+    });
+
+    window.respawnPlayer = function () {
+      let rig = document.getElementById('rig');
+      if (rig && rig.components['player-health']) {
+        rig.components['player-health'].respawn();
+      }
+    };
+
+    // Rastreo de carga de assets
+    window.addEventListener('DOMContentLoaded', function () {
+      var assetsEl = document.querySelector('a-assets');
+      if (assetsEl) {
+        assetsEl.addEventListener('loaded', function () {
+          var t = ((performance.now() - window.gameStartTime) / 1000).toFixed(2);
+          console.log("[PERF] TODOS los assets descargados y parseados en t=" + t + "s");
+
+          // Coordenadas de aparición (Spawn) del Avatar (Rig)
+          var rig = document.querySelector('#rig');
+          if (rig) {
+            var pos = rig.getAttribute('position');
+            console.log("[SPAWN] Avatar Rig spawn coordinates: X=" + pos.x.toFixed(2) + ", Y=" + pos.y.toFixed(2) + ", Z=" + pos.z.toFixed(2));
+          }
+        });
+      }
+
+      // Rastrear cada asset individualmente
+      var items = document.querySelectorAll('a-asset-item');
+      items.forEach(function (item) {
+        item.addEventListener('loaded', function () {
+          var t = ((performance.now() - window.gameStartTime) / 1000).toFixed(2);
+          console.log("[PERF] Asset cargado: " + item.id + " en t=" + t + "s");
+        });
+      });
+    });
+
+    // Almacén de logs globales
+    window.gameLogs = [];
+    window.addLog = function (msg) {
+      var time = new Date().toLocaleTimeString();
+      window.gameLogs.push("[" + time + "] " + msg);
+      if (window.gameLogs.length > 200) window.gameLogs.shift(); // Guardar los últimos 200 eventos
+    };
+
+    // Interceptar todos los comandos de la consola
+    (function () {
+      var oldLog = console.log;
+      var oldWarn = console.warn;
+      var oldError = console.error;
+
+      console.log = function () {
+        var msg = Array.from(arguments).join(' ');
+        window.addLog("[INFO] " + msg);
+        oldLog.apply(console, arguments);
+      };
+      console.warn = function () {
+        var msg = Array.from(arguments).join(' ');
+        if (msg.indexOf('webvr-polyfill') !== -1) return; // Silenciar advertencias inofensivas del polyfill
+        window.addLog("[WARN] " + msg);
+        oldWarn.apply(console, arguments);
+      };
+      console.error = function () {
+        var msg = Array.from(arguments).join(' ');
+        if (msg.indexOf('Sensor could not be read') !== -1) return; // Silenciar error fantasma de sensores
+        window.addLog("[ERROR] " + msg);
+        oldError.apply(console, arguments);
+      };
+
+      window.addEventListener('error', function (e) {
+        window.addLog("[FATAL] " + e.message + " L:" + e.lineno);
+      });
+    })();
+
+    function copyLogs() {
+      var text = window.gameLogs.join('\n');
+      if (!text) text = "La consola está vacía.";
+
+      // LIMPIEZA ANTI-WHATSAPP
+      text = text.replace(/https?:\/\/[^\s]+/g, "[LINK OCULTO]");
+
+      // Intentar método moderno (falla en WebView sin HTTPS)
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function () {
+          flashLogButton();
+        }).catch(function (err) {
+          fallbackCopyTextToClipboard(text);
+        });
+      } else {
+        fallbackCopyTextToClipboard(text);
+      }
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+      // Crear un textarea temporal para copiar en Android
+      var el = document.createElement('textarea');
+      el.value = text;
+
+      // Evitar scroll en la pantalla al hacer focus
+      el.style.top = "0";
+      el.style.left = "0";
+      el.style.position = "fixed";
+
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+
+      try {
+        document.execCommand('copy');
+        flashLogButton();
+      } catch (err) {
+        console.error('Fallback: Error al copiar - ' + err);
+      }
+
+      document.body.removeChild(el);
+    }
+
+    function flashLogButton() {
+      var btn = document.getElementById('log-button');
+      if (btn) {
+        btn.style.background = "white";
+        setTimeout(function () { btn.style.background = "red"; }, 1000);
+      }
+    }
+
+    window.animPaused = false;
+    function toggleAnimPause() {
+      window.animPaused = !window.animPaused;
+      var btn = document.getElementById('pause-anim-btn');
+      var ts = window.animPaused ? 0 : 1;
+      btn.style.background = window.animPaused ? "#ff3300" : "#ffaa00";
+
+      // Aplicar el estado de pausa al modelo visible actual
+      var models = ['model-idle', 'model-walk', 'model-back', 'model-run', 'model-prone', 'model-jump'];
+      models.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el && (el.getAttribute('visible') === true || el.getAttribute('visible') === 'true')) {
+          el.setAttribute('animation-mixer', 'timeScale: ' + ts);
+        }
+      });
+    }
+
+    window.nativeRightX = 0;
+    window.nativeRightY = 0;
+
+    // PUENTE NATIVO: Recibe la palanca derecha DIRECTAMENTE del sistema Android
+    window.nativeGamepadAxes = function (z, rz, rx, ry) {
+      var deadzone = 0.15;
+      var filterAxis = function (val) { return (Math.abs(val) > deadzone) ? val : 0; };
+
+      // En controles chinos genéricos, Z y RZ suelen ser la palanca derecha
+      var rightX = filterAxis(z);
+      if (rightX === 0) rightX = filterAxis(rx);
+
+      var rightY = filterAxis(rz);
+      if (rightY === 0) rightY = filterAxis(ry);
+
+      // Guardar en variables globales para aplicarlas de manera CONTINUA en el loop de A-Frame
+      window.nativeRightX = rightX;
+      window.nativeRightY = rightY;
+    };
+
+    AFRAME.registerComponent('tint-npc', {
+      schema: { darkness: { type: 'number', default: 1.0 } },
+      init: function () {
+        this.el.addEventListener('model-loaded', () => {
+          let mesh = this.el.getObject3D('mesh');
+          if (mesh) {
+            mesh.traverse((node) => {
+              if (node.isMesh && node.material) {
+                // Prevenir fallos con arrays de materiales o materiales compartidos
+                if (Array.isArray(node.material)) {
+                  node.material = node.material.map(m => m.clone());
+                  node.material.forEach(m => this.applyColor(m));
+                } else {
+                  node.material = node.material.clone();
+                  this.applyColor(node.material);
+                }
+              }
+            });
+          }
+        });
+      },
+      applyColor: function (mat) {
+        mat.emissive.setHex(0xff0000);
+        mat.emissiveIntensity = this.data.darkness;
+        mat.color.setHex(0x550000);
+        mat.needsUpdate = true;
+      }
+    });
+
+    AFRAME.registerComponent('npc-manager', {
+      init: function () {
+        this.targetKills = 30;
+        this.totalKilled = 0;
+        this.activeCount = 2;
+        this.npcs = [];
+
+        // Spawnear una vez cargados los assets
+        if (this.el.sceneEl.hasLoaded) {
+          this.spawnWave();
+        } else {
+          this.el.sceneEl.addEventListener('loaded', () => {
+            setTimeout(() => this.spawnWave(), 1000); // Pequeño delay de seguridad
+          });
+        }
+      },
+      clearAll: function () {
+        this.npcs.forEach(npc => {
+          if (npc.parentNode) npc.parentNode.removeChild(npc);
+        });
+        this.npcs = [];
+      },
+      spawnWave: function () {
+        this.clearAll();
+        for (let i = 0; i < this.activeCount; i++) {
+          let npc = document.createElement('a-entity');
+          npc.setAttribute('class', 'npc-enemy');
+          npc.setAttribute('npc-ai', '');
+          // Usar físicas reales con esfera idéntica a la del jugador para garantizar inicialización
+          npc.setAttribute('dynamic-body', 'shape: sphere; sphereRadius: 0.35; mass: 65; linearDamping: 0.0');
+          npc.setAttribute('rotation-lock', '');
+          npc.setAttribute('sound', 'src: #sonido-disparo; poolSize: 3; volume: 0.6');
+
+          npc.addEventListener('body-loaded', () => {
+            if (npc.body) {
+              npc.body.fixedRotation = true;
+              npc.body.updateMassProperties();
+            }
+          });
+
+          let bodyHitbox = document.createElement('a-entity');
+          bodyHitbox.setAttribute('class', 'npc-body');
+          bodyHitbox.setAttribute('geometry', 'primitive: cylinder; radius: 0.35; height: 1.3');
+          bodyHitbox.setAttribute('position', '0 0.65 0');
+          bodyHitbox.setAttribute('material', 'visible: false');
+          npc.appendChild(bodyHitbox);
+
+          let headHitbox = document.createElement('a-entity');
+          headHitbox.setAttribute('class', 'npc-head');
+          headHitbox.setAttribute('geometry', 'primitive: sphere; radius: 0.25');
+          headHitbox.setAttribute('position', '0 1.5 0');
+          headHitbox.setAttribute('material', 'visible: false');
+          npc.appendChild(headHitbox);
+
+          let models = [
+            { id: 'idle', src: '#avatar-idle', visible: true, loop: 'repeat' },
+            { id: 'walk', src: '#avatar-walk', visible: false, loop: 'repeat' },
+            { id: 'fire', src: '#avatar-fire', visible: false, loop: 'repeat' },
+            { id: 'die', src: '#avatar-prone', visible: false, loop: 'once' }
+          ];
+
+          // Color de la ronda actual (Rojo progresivo oscuro)
+          let roundIndex = Math.floor(this.totalKilled / 3);
+          let darkness = Math.max(0.1, 1.0 - (roundIndex * 0.08));
+
+          models.forEach(m => {
+            let modelEl = document.createElement('a-entity');
+            modelEl.setAttribute('class', 'model-' + m.id);
+            modelEl.setAttribute('gltf-model', m.src);
+            modelEl.setAttribute('animation-mixer', 'clip: *; loop: ' + m.loop + '; clampWhenFinished: true; timeScale: ' + (m.visible ? '1' : '0'));
+            modelEl.setAttribute('visible', m.visible ? 'true' : 'false');
+            modelEl.setAttribute('tint-npc', 'darkness: ' + darkness);
+
+            if (m.id !== 'die') {
+              modelEl.setAttribute('attach-weapon', 'src: #rifle-model');
+            }
+
+            npc.appendChild(modelEl);
+          });
+
+          this.randomSpawn(npc);
+          this.el.sceneEl.appendChild(npc);
+          this.npcs.push(npc);
+        }
+      },
+      randomSpawn: function (npc) {
+        let angle = Math.random() * Math.PI * 2;
+        let radius = 15 + Math.random() * 15; // Spawnean más lejos
+        let pPos = document.querySelector('#rig').object3D.position;
+        // Spawneamos a Y = -2.0 para evitar que colisionen o queden atrapados dentro del suelo (Y = -3.43)
+        npc.setAttribute('position', (pPos.x + Math.cos(angle) * radius) + ' -2.0 ' + (pPos.z + Math.sin(angle) * radius));
+      },
+      onNpcDied: function (npc) {
+        this.totalKilled++;
+        console.log("[NPC] Asesinatos: " + this.totalKilled);
+        setTimeout(() => {
+          if (npc.parentNode) {
+            this.randomSpawn(npc);
+            npc.components['npc-ai'].respawn();
+          }
+        }, 3000);
+      }
+    });
+
+    AFRAME.registerComponent('npc-ai', {
+      init: function () {
+        this.hp = 3;
+        this.state = 'idle';
+        this.player = document.querySelector('#rig');
+
+        // Crear entidad de sonido 3D para los pasos de este NPC
+        this.stepSoundEl = document.createElement('a-entity');
+        this.stepSoundEl.setAttribute('sound', 'src: #sonido-pasos; poolSize: 1; volume: 0.6; loop: true');
+        this.el.appendChild(this.stepSoundEl);
+      },
+      takeDamage: function (amount) {
+        if (this.state === 'die') return;
+        this.hp -= amount;
+        if (this.hp <= 0) this.die();
+      },
+      die: function () {
+        this.state = 'die';
+        this.switchAnimation('die');
+        let manager = this.el.sceneEl.components['npc-manager'];
+        if (manager) manager.onNpcDied(this.el);
+      },
+      respawn: function () {
+        this.hp = 3;
+        this.state = 'idle';
+        this.switchAnimation('idle');
+      },
+      switchAnimation: function (stateName) {
+        if (this.currentAnimState === stateName) return; // Evitar spam cada frame
+        this.currentAnimState = stateName;
+
+        ['idle', 'walk', 'fire', 'die'].forEach(m => {
+          let el = this.el.querySelector('.model-' + m);
+          if (el) {
+            el.setAttribute('visible', m === stateName);
+            el.setAttribute('animation-mixer', 'timeScale: ' + (m === stateName ? 1 : 0));
+          }
+        });
+
+        // Controlar sonido de pasos del NPC solo cuando cambia el estado
+        if (this.stepSoundEl && this.stepSoundEl.components.sound) {
+          if (stateName === 'walk') {
+            this.stepSoundEl.components.sound.stopSound(); // Detiene si ya estaba
+            this.stepSoundEl.components.sound.playSound();
+          } else {
+            this.stepSoundEl.components.sound.stopSound();
+          }
+        }
+      },
+      tick: function (time) {
+        if (this.state === 'die' || !this.player) return;
+
+        let pPos = this.player.object3D.position;
+        let mPos = this.el.object3D.position;
+
+        let dx = pPos.x - mPos.x;
+        let dz = pPos.z - mPos.z;
+        let dist = Math.sqrt(dx * dx + dz * dz);
+
+        // Siempre mirar al jugador
+        this.el.object3D.rotation.y = Math.atan2(dx, dz);
+
+        if (dist < 5) {
+          this.state = 'attack';
+          this.switchAnimation('fire');
+
+          if (this.el.body) {
+            this.el.body.velocity.x = 0;
+            this.el.body.velocity.z = 0;
+          }
+
+          if (!this.lastAttack || time - this.lastAttack > 1000) {
+            this.lastAttack = time;
+
+            // Reproducir sonido de disparo espacial (3D)
+            if (this.el.components.sound) {
+              this.el.components.sound.playSound();
+            }
+
+            let rig = document.querySelector('#rig');
+            if (rig && rig.components['player-health']) {
+              rig.sceneEl.emit('player-hit');
+            }
+          }
+        } else {
+          this.state = 'seek';
+          this.switchAnimation('walk');
+
+          // MOVER NPC FÍSICAMENTE (Reemplazo total y absoluto del NavMesh defectuoso)
+          if (this.el.body) {
+            let angle = Math.atan2(dx, dz);
+            let speed = 2.5; // Velocidad del NPC
+            this.el.body.velocity.x = Math.sin(angle) * speed;
+            this.el.body.velocity.z = Math.cos(angle) * speed;
+          }
+        }
+      }
+    });
+
+    // Sistema de Armas y Disparos
+    AFRAME.registerComponent('weapon-system', {
+      schema: {
+        maxAmmo: { default: 36 },
+        fireRate: { default: 100 } // ms entre balas (10 balas por segundo = ráfaga continua)
+      },
+      init: function () {
+        this.ammo = this.data.maxAmmo;
+        this.lastFireTime = 0;
+
+        // Raycaster nativo de THREE.js para mayor rendimiento
+        this.raycaster = new THREE.Raycaster();
+
+        // Material para los agujeros de bala (Decals)
+        // depthWrite: false y polygonOffset evitan el parpadeo (Z-fighting) al pegarlo a la pared
+        this.holeMaterial = new THREE.MeshBasicMaterial({ color: 0x050505, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+        this.holeGeometry = new THREE.CircleGeometry(0.04, 8); // Octágono simple y ligero
+
+        // Material para las trazadoras
+        this.tracerMaterial = new THREE.LineBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0.8 });
+
+        // Cargar Sonidos
+        this.audioSingle = new Audio('tiroAtiro.m4a');
+        this.audioSingle.volume = 0.8;
+        this.audioAuto = new Audio('rafaga.m4a');
+        this.audioAuto.volume = 0.8;
+        this.audioAuto.loop = true; // Si lo mantienes, repetirá el sonido de ráfaga
+
+        this.audioReload = new Audio('reload.mp3');
+        this.audioReload.volume = 1.0;
+
+        this.isFiring = false;
+        this.isReloading = false;
+
+        this.updateHUD();
+      },
+      updateHUD: function () {
+        var ammoText = document.getElementById('hud-ammo');
+        if (ammoText) {
+          if (this.isReloading) {
+            ammoText.innerText = 'Recargando...';
+            ammoText.style.color = 'yellow';
+          } else {
+            ammoText.innerText = this.ammo;
+            ammoText.style.color = this.ammo === 0 ? 'red' : '#00ffcc';
+          }
+        }
+      },
+      reload: function () {
+        if (this.ammo < this.data.maxAmmo && !this.isReloading) {
+          this.isReloading = true;
+          this.updateHUD();
+          this.audioReload.play().catch(e => { });
+
+          // Tiempo que dura la recarga (puedes ajustarlo)
+          setTimeout(() => {
+            this.ammo = this.data.maxAmmo;
+            this.isReloading = false;
+            this.updateHUD();
+          }, 1500); // 1.5 segundos
+        }
+      },
+      fire: function () {
+        if (this.isReloading) {
+          this.stopFire();
+          return;
+        }
+
+        if (this.ammo <= 0) {
+          this.stopFire(); // Detener sonido si se acaba la munición
+          this.reload(); // Auto-recargar si intentas disparar sin balas
+          return;
+        }
+
+        var now = performance.now();
+        var timeSinceLastShot = now - this.lastFireTime;
+        if (timeSinceLastShot < this.data.fireRate) return; // Controla la cadencia
+
+        this.lastFireTime = now;
+        this.ammo--;
+        this.updateHUD();
+
+        // Destello del arma (Muzzle Flash)
+        var cameraEl = document.querySelector('a-camera');
+        if (cameraEl) {
+          var flash = document.createElement('a-entity');
+          flash.setAttribute('light', 'type: point; color: #ffaa00; intensity: 3; distance: 5; decay: 2');
+          // Posicionamos la luz justo frente al arma/cámara
+          flash.setAttribute('position', '0.2 -0.2 -1');
+          cameraEl.appendChild(flash);
+          setTimeout(() => {
+            if (flash.parentNode) flash.parentNode.removeChild(flash);
+          }, 40); // Destello ultra rápido
+        }
+
+        // Lógica de sonido
+        if (timeSinceLastShot > this.data.fireRate * 1.5) {
+          // Es el primer tiro (o un tiro aislado)
+          this.audioSingle.currentTime = 0;
+          this.audioSingle.play().catch(e => { });
+        } else {
+          // Mantuvo presionado, es ráfaga
+          if (this.audioAuto.paused) {
+            this.audioSingle.pause();
+            this.audioAuto.currentTime = 0;
+            this.audioAuto.play().catch(e => { });
+          }
+        }
+        this.isFiring = true;
+
+        if (!cameraEl) return;
+
+        var camera3D = cameraEl.getObject3D('camera');
+        if (!camera3D) return;
+
+        // El rayo sale desde la cámara y apunta hacia el anillo rojo
+        var origin = new THREE.Vector3();
+        camera3D.getWorldPosition(origin);
+
+        var direction = new THREE.Vector3(0, 0, -1);
+        direction.transformDirection(camera3D.matrixWorld);
+
+        this.raycaster.set(origin, direction);
+
+        // Intersectamos toda la escena
+        var sceneEl = this.el.sceneEl;
+        var intersects = this.raycaster.intersectObjects(sceneEl.object3D.children, true);
+
+        var hit = null;
+        var hitEl = null;
+        for (var i = 0; i < intersects.length; i++) {
+          var obj = intersects[i].object;
+
+          var el = obj.el;
+          if (!el) {
+            var p = obj.parent;
+            while (p && !p.el) p = p.parent;
+            if (p) el = p.el;
+          }
+
+          var isHitbox = el && (el.classList.contains('npc-body') || el.classList.contains('npc-head'));
+          var isAvatar = el && el.id === 'avatar-container';
+
+          if ((obj.visible || isHitbox) && obj.type === "Mesh" && !obj.name.includes('Line') && !isAvatar) {
+            hit = intersects[i];
+            hitEl = el;
+            break;
+          }
+        }
+
+        var hitPoint;
+        if (hit) {
+          hitPoint = hit.point;
+          this.createImpact(hit.point, hit.face ? hit.face.normal : new THREE.Vector3(0, 1, 0), hit.object, hitEl);
+        } else {
+          // Si disparamos al cielo
+          hitPoint = origin.clone().add(direction.multiplyScalar(100));
+        }
+
+        // this.createTracer(origin, hitPoint); // Eliminado por petición para mayor realismo
+        this.addRecoil();
+      },
+
+      createTracer: function (start, end) {
+        // Calcular inicio del rayo simulando la punta del arma (abajo y a la derecha de la cámara)
+        var right = new THREE.Vector3();
+        var camera = document.querySelector('a-camera').getObject3D('camera');
+        right.setFromMatrixColumn(camera.matrixWorld, 0);
+        var up = new THREE.Vector3();
+        up.setFromMatrixColumn(camera.matrixWorld, 1);
+
+        var gunBarrelPos = start.clone().add(right.multiplyScalar(0.4)).add(up.multiplyScalar(-0.4)).add(new THREE.Vector3(0, 0, -0.5));
+
+        var geometry = new THREE.BufferGeometry().setFromPoints([gunBarrelPos, end]);
+        var line = new THREE.Line(geometry, this.tracerMaterial);
+        // Marcar la trazadora para ignorarla en el raycast
+        line.name = "tracerLine";
+        this.el.sceneEl.object3D.add(line);
+
+        // Destruir instantáneamente la trazadora para no consumir memoria
+        setTimeout(() => {
+          this.el.sceneEl.object3D.remove(line);
+          geometry.dispose();
+        }, 40);
+      },
+
+      createImpact: function (point, normal, object, el) {
+        var isNPC = el && (el.classList.contains('npc-body') || el.classList.contains('npc-head'));
+
+        if (isNPC) {
+          var damage = el.classList.contains('npc-head') ? 3 : 1;
+
+          var npcRoot = el.closest('.npc-enemy');
+          if (npcRoot && npcRoot.components['npc-ai']) {
+            npcRoot.components['npc-ai'].takeDamage(damage);
+          }
+
+          // Partículas de Sangre (MINIMALISTA - 2 cubos por bala)
+          var bloodGeo = new THREE.BoxGeometry(0.06, 0.06, 0.06);
+          var bloodMat = new THREE.MeshBasicMaterial({ color: 0x990000 });
+          for (var i = 0; i < 2; i++) {
+            var blood = new THREE.Mesh(bloodGeo, bloodMat);
+            blood.position.copy(point);
+            blood.userData.velocity = new THREE.Vector3(
+              normal.x + (Math.random() - 0.5),
+              normal.y + Math.random(),
+              normal.z + (Math.random() - 0.5)
+            ).normalize().multiplyScalar(0.08);
+            this.el.sceneEl.object3D.add(blood);
+
+            var t = 0;
+            let fadeBlood = blood;
+            let fadeTimer = setInterval(() => {
+              t += 0.016;
+              fadeBlood.position.add(fadeBlood.userData.velocity);
+              if (t > 0.3) { // Desaparece rápido en 0.3s
+                clearInterval(fadeTimer);
+                if (fadeBlood.parent) fadeBlood.parent.remove(fadeBlood);
+                if (i === 1) { bloodGeo.dispose(); bloodMat.dispose(); }
+              }
+            }, 16);
+          }
+        } else {
+          // 1. Chispazo en pared
+          var sparkGeometry = new THREE.SphereGeometry(0.02, 4, 4);
+          var sparkMaterial = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true });
+          var spark = new THREE.Mesh(sparkGeometry, sparkMaterial);
+          spark.position.copy(point);
+          this.el.sceneEl.object3D.add(spark);
+
+          var fadeTimer = setInterval(() => {
+            sparkMaterial.opacity -= 0.15;
+            if (sparkMaterial.opacity <= 0) {
+              clearInterval(fadeTimer);
+              this.el.sceneEl.object3D.remove(spark);
+              sparkGeometry.dispose();
+              sparkMaterial.dispose();
+            }
+          }, 16);
+
+          // 2. Agujero
+          var hole = new THREE.Mesh(this.holeGeometry, this.holeMaterial);
+          hole.position.copy(point);
+          var lookAtPt = point.clone().add(normal);
+          hole.lookAt(lookAtPt);
+          this.el.sceneEl.object3D.add(hole);
+        }
+      },
+
+      addRecoil: function () {
+        var pitchWrapper = document.querySelector('#camera-pitch');
+        if (pitchWrapper) {
+          // Recoil visual hacia arriba
+          pitchWrapper.object3D.rotation.x += 0.015;
+          setTimeout(() => {
+            pitchWrapper.object3D.rotation.x -= 0.015;
+          }, 50);
+        }
+      },
+
+      stopFire: function () {
+        if (this.isFiring) {
+          this.audioAuto.pause();
+          this.isFiring = false;
+        }
+      }
+    });
+
+    // Componente FPS definitivo: Controla movimiento (izq) y mirada (der)
+    AFRAME.registerComponent('gamepad-fps', {
+      schema: { speed: { default: 2.0 } },
+      init: function () {
+        this.pasosAudio = document.getElementById('sonido-pasos');
+        if (this.pasosAudio) this.pasosAudio.volume = 0.5;
+        this.ambientStarted = false;
+      },
+      tick: function (time, timeDelta) {
+        var gp = null;
+        var gamepads = navigator.getGamepads();
+        for (var i = 0; i < gamepads.length; i++) {
+          if (gamepads[i] && gamepads[i].axes.length > 0) {
+            gp = gamepads[i];
+            break;
+          }
+        }
+
+        // --- LÓGICA DE MUERTE Y RESPAWN EN VR ---
+        let healthComp = this.el.components['player-health'];
+        if (healthComp && healthComp.lives <= 0) {
+          // Y = Continuar
+          var continuePressed = false;
+          if (window.AndroidGamepad) continuePressed = window.AndroidGamepad.getBtnY();
+          if (!continuePressed && gp && gp.buttons[3]) continuePressed = gp.buttons[3].pressed || gp.buttons[3].value > 0.5;
+          
+          // B = Empezar de Nuevo
+          var restartPressed = false;
+          if (window.AndroidGamepad) restartPressed = window.AndroidGamepad.getBtnB();
+          if (!restartPressed && gp && gp.buttons[1]) restartPressed = gp.buttons[1].pressed || gp.buttons[1].value > 0.5;
+          
+          if (continuePressed && window.respawnPlayer) {
+             window.respawnPlayer();
+          } else if (restartPressed) {
+             location.reload();
+          }
+          return; // No hacer nada más si está muerto
+        }
+        // ----------------------------------------
+
+        // Forzar música ambiental en el primer input del jugador (Web Audio Policy)
+        if (!this.ambientStarted) {
+          var hasInput = false;
+          if (gp) {
+            for (let j = 0; j < gp.axes.length; j++) if (Math.abs(gp.axes[j]) > 0.1) hasInput = true;
+            for (let j = 0; j < gp.buttons.length; j++) if (gp.buttons[j].pressed) hasInput = true;
+          }
+          if (window.nativeRightX !== 0 || window.nativeRightY !== 0) hasInput = true;
+
+          if (hasInput) {
+            this.ambientStarted = true;
+            let ambientAudio = document.getElementById('sonido-ambiente');
+            if (ambientAudio) {
+              ambientAudio.volume = 0.15;
+              ambientAudio.play().catch(e => console.log('Audio ambiental bloqueado', e));
+            }
+          }
+        }
+
+        var isWalking = false;
+        var isWalkingBack = false;
+        var isRunning = false;
+        var isProne = false;
+
+        var deadzone = 0.15;
+
+        // Ejes de Palanca Izquierda para Movimiento (Iniciado en 0 para móvil)
+        var ejeX = 0;
+        var ejeY = 0;
+
+        if (gp) {
+          // Si hay mando conectado, lo sobreescribe si se mueve la palanca
+          if (Math.abs(gp.axes[0]) > deadzone) ejeX = gp.axes[0];
+          if (Math.abs(gp.axes[1]) > deadzone) ejeY = gp.axes[1];
+        }
+
+
+
+        // DISPARO CON R1 (Botón 5 comúnmente o Interfaz Nativa de Android)
+        var r1Pressed = window.AndroidGamepad ? window.AndroidGamepad.getR1() : false;
+        if (!r1Pressed && gp) {
+          r1Pressed = (gp.buttons[5] && gp.buttons[5].pressed);
+        }
+
+        if (r1Pressed) {
+          if (this.el.components['weapon-system']) {
+            this.el.components['weapon-system'].fire();
+          }
+        } else {
+          // No detenemos el fuego aquí para no interrumpir el mouse de PC.
+          // El stopFire para gamepad lo manejaremos si no hay r1Pressed y no hay mouse apretado.
+          // Para simplificar, si no hay mando no llamamos a stopFire aquí en cada frame.
+          if ((gp || window.AndroidGamepad) && !r1Pressed) {
+            if (this.el.components['weapon-system']) {
+              this.el.components['weapon-system'].stopFire();
+            }
+          }
+        }
+
+        // Apuntar / Zoom con L1 (Físicamente Botón 7)
+        var zoomPressed = false;
+        if (gp) {
+          zoomPressed = (gp.buttons[7] && (gp.buttons[7].pressed || gp.buttons[7].value > 0.65));
+        }
+
+        var camera = document.querySelector('a-camera');
+        if (camera) {
+          var targetFov = zoomPressed ? 40 : 80; // FOV 40 cuando apuntas, 80 normal
+          // Intentar leer del componente camera primero, sino del atributo fov
+          var currentFov = 80;
+          if (camera.components && camera.components.camera) {
+            currentFov = camera.components.camera.data.fov;
+          } else {
+            currentFov = parseFloat(camera.getAttribute('fov') || 80);
+          }
+
+          if (Math.abs(currentFov - targetFov) > 0.5) {
+            var newFov = currentFov + (targetFov - currentFov) * 0.15; // Interpolación suave
+            camera.setAttribute('camera', 'fov', newFov);
+            camera.setAttribute('fov', newFov); // Fallback para otras lógicas
+          }
+        }
+
+        // Rotación con la palanca derecha o NumPad
+        var yawWrapper = document.querySelector('#camera-yaw');
+        var pitchWrapper = document.querySelector('#camera-pitch');
+
+        // Inicializar rotación en 0 para móvil
+        var nrX = 0;
+        var nrY = 0;
+
+        if (window.AndroidGamepad) {
+          var natX = window.AndroidGamepad.getRightX();
+          var natY = window.AndroidGamepad.getRightY();
+          if (natX !== 0) nrX = natX;
+          if (natY !== 0) nrY = natY;
+        } else if (gp) {
+          // Fallback for PC controllers if native isn't present
+          var filterAxis = function (val) { return (Math.abs(val) > deadzone) ? val : 0; };
+          var pnrX = filterAxis(gp.axes[2] || 0);
+          if (pnrX === 0) pnrX = filterAxis(gp.axes[4] || 0);
+          if (pnrX === 0) pnrX = window.nativeRightX || 0;
+          if (pnrX !== 0) nrX = pnrX;
+
+          var pnrY = filterAxis(gp.axes[5] || 0);
+          if (pnrY === 0) pnrY = filterAxis(gp.axes[3] || 0);
+          if (pnrY === 0) pnrY = window.nativeRightY || 0;
+          if (pnrY !== 0) nrY = pnrY;
+        }
+
+        var dtFactor = (timeDelta || 16.666) / 16.666;
+        if (dtFactor > 6) dtFactor = 6; // Límite para evitar giros bruscos en lag spikes
+
+        if (window.inspectMode) {
+          var avatar = document.getElementById('avatar-container');
+          if (avatar) {
+            if (nrX !== 0) avatar.object3D.rotation.y += nrX * 0.05 * dtFactor;
+            if (nrY !== 0) avatar.object3D.position.y -= nrY * 0.02 * dtFactor;
+          }
+        } else {
+          if (nrX !== 0) {
+            if (yawWrapper) yawWrapper.object3D.rotation.y -= nrX * 0.04 * dtFactor;
+          }
+          // Rotacion vertical con joystick activada
+          if (nrY !== 0) {
+            if (pitchWrapper) {
+              var newPitch = pitchWrapper.object3D.rotation.x - (nrY * 0.04 * dtFactor);
+              pitchWrapper.object3D.rotation.x = Math.max(-1.4, Math.min(1.4, newPitch));
+            }
+          }
+        }
+
+        if (ejeX !== 0 || ejeY !== 0) {
+          if (this.el.body) {
+            this.el.body.linearDamping = 0.0; // Reset damping when moving
+            this.el.body.linearFactor.set(1, 1, 1); // Desbloquear ejes al moverse
+          }
+          // Detectar estado de animación
+          // Si nos movemos hacia adelante (ejeY < -0.1) o a los lados (ejeX > 0.1 o ejeX < -0.1) sin retroceder (ejeY <= 0.1)
+          isWalking = ejeY < -0.1 || (Math.abs(ejeX) > 0.1 && ejeY <= 0.1);
+          isWalkingBack = ejeY > 0.1;
+
+          var moveSpeed = 3.5;
+
+          // Correr con R2 (Interfaz nativa o Botón 4)
+          var runPressed = window.AndroidGamepad ? window.AndroidGamepad.getR2() : false;
+          if (!runPressed && gp) {
+            runPressed = (gp.buttons[4] && gp.buttons[4].pressed);
+          }
+
+          // Si el jugador está apuntando con L2, no puede correr simultáneamente
+          if (runPressed && isWalking && !zoomPressed) {
+            isRunning = true;
+            isWalking = false; // Anula caminar para correr
+            moveSpeed = 6.5;
+          }
+
+          // Botón X (Square) para tumbarse (prone)
+          // X = ramplear (Botón 2 nativo o web)
+          var btnXPressed = window.AndroidGamepad ? window.AndroidGamepad.getBtnX() : false;
+          if (!btnXPressed && gp) {
+            btnXPressed = (gp.buttons[2] && gp.buttons[2].pressed);
+          }
+          if (btnXPressed) {
+            isProne = true;
+            isRunning = false;
+            isWalking = false;
+            isWalkingBack = false;
+          }
+
+
+          var moveSpeed = isRunning ? 6.5 : (isProne ? 1.5 : 3.5);
+
+          // Lógica de sonido de pasos
+          if (this.pasosAudio) {
+            if ((isWalking || isWalkingBack || isRunning) && !this.isJumping) {
+              if (this.pasosAudio.paused) this.pasosAudio.play().catch(e => { });
+              this.pasosAudio.playbackRate = isRunning ? 1.5 : (isProne ? 0.6 : 1.0);
+            } else {
+              if (!this.pasosAudio.paused) this.pasosAudio.pause();
+            }
+          }
+
+          // Movimiento hacia la dirección de la mirada
+          var rotationY = yawWrapper ? yawWrapper.object3D.rotation.y : 0;
+
+          var velX = (ejeX * Math.cos(rotationY) + ejeY * Math.sin(rotationY)) * moveSpeed;
+          var velZ = (-ejeX * Math.sin(rotationY) + ejeY * Math.cos(rotationY)) * moveSpeed;
+
+          if (this.el.body) {
+            this.el.body.velocity.set(velX, this.el.body.velocity.y, velZ);
+            if (typeof this.el.body.wakeUp === 'function') this.el.body.wakeUp();
+          }
+        } else {
+          // Pausar pasos si nos detenemos por completo
+          if (this.pasosAudio && !this.pasosAudio.paused) {
+            this.pasosAudio.pause();
+          }
+
+          // Freno instantáneo al soltar la palanca para eliminar el 'retraso'
+          if (this.el.body) {
+            this.el.body.velocity.x = 0;
+            this.el.body.velocity.z = 0;
+
+            // ANTIDESLIZAMIENTO (Evitar resbalar en escaleras al estar quieto)
+            if (!this.isJumping) {
+              var isGrounded = false;
+              var world = this.el.sceneEl.systems.physics ? this.el.sceneEl.systems.physics.world : null;
+              if (world) {
+                for (var c = 0; c < world.contacts.length; c++) {
+                  var contact = world.contacts[c];
+                  if (contact.bi === this.el.body || contact.bj === this.el.body) {
+                    if (Math.abs(contact.ni.y) > 0.3) {
+                      isGrounded = true;
+                      break;
+                    }
+                  }
+                }
+              }
+              if (isGrounded) {
+                this.el.body.velocity.set(0, 0, 0);
+                this.el.body.linearFactor.set(0, 1, 0); // Bloquear movimiento horizontal X/Z para no resbalar en laderas
+                if (world && world.gravity) {
+                  this.el.body.force.set(0, -world.gravity.y * this.el.body.mass, 0);
+                } else {
+                  this.el.body.force.set(0, 0, 0);
+                }
+              } else {
+                this.el.body.linearFactor.set(1, 1, 1);
+              }
+            } else {
+              this.el.body.linearFactor.set(1, 1, 1);
+            }
+          }
+        }
+
+        // Saltar estrictamente con A (Botón 0)
+        var jumpPressed = window.AndroidGamepad ? window.AndroidGamepad.getBtnA() : false;
+        if (!jumpPressed && gp) {
+          jumpPressed = (gp.buttons[0] && gp.buttons[0].pressed);
+        }
+
+        if (!jumpPressed) {
+          this.jumpButtonHeld = false;
+        }
+        if (jumpPressed && !this.isJumping && !this.jumpButtonHeld) {
+          this.jumpButtonHeld = true;
+          if (this.el.body) {
+            this.el.body.velocity.set(this.el.body.velocity.x, 5, this.el.body.velocity.z);
+          }
+          this.isJumping = true;
+          setTimeout(() => { this.isJumping = false; }, 900);
+        }
+
+        // Log de diagnóstico automático (1 vez por segundo) para ver qué envía tu control
+        if (!this.logTimer) this.logTimer = 0;
+        this.logTimer++;
+        if (this.logTimer > 60) {
+          var activeBtns = [];
+          if (gp) {
+            for (var i = 0; i < gp.buttons.length; i++) {
+              if (gp.buttons[i] && gp.buttons[i].pressed) activeBtns.push(i + "(" + gp.buttons[i].value.toFixed(2) + ")");
+            }
+          }
+          var posLog = this.el.object3D ? this.el.object3D.position.y.toFixed(2) : 'N/A';
+          var logMsg = "DIAGNÓSTICO EJES: [" + (gp ? Array.from(gp.axes).map(a => a.toFixed(2)).join(', ') : 'PC') + "] ALTURA: " + posLog + " BOTONES: [" + activeBtns.join(',') + "]";
+          if (activeBtns.length > 0) {
+            // Solo loguear si hay un botón activo para no spamear y poder descubrir el R1
+            if (window.addLog) window.addLog(logMsg);
+          }
+          this.logTimer = 0;
+        }
+
+        // Transiciones de Animación del Avatar
+        var isJump = this.isJumping;
+        var isFiringIdle = r1Pressed && !isWalking && !isWalkingBack && !isRunning && !isProne && !isJump;
+        var isIdle = !isWalking && !isWalkingBack && !isRunning && !isProne && !isJump && !isFiringIdle;
+
+        var idleEl = document.querySelector('#model-idle');
+        var walkEl = document.querySelector('#model-walk');
+        var backEl = document.querySelector('#model-back');
+        var runEl = document.querySelector('#model-run');
+        var proneEl = document.querySelector('#model-prone');
+        var jumpEl = document.querySelector('#model-jump');
+        var fireEl = document.querySelector('#model-fire');
+
+        var currentTs = window.animPaused ? 0 : 1;
+
+        if (this.lastState !== 'jump' && isJump) {
+          this.lastState = 'jump';
+          if (idleEl) { idleEl.setAttribute('visible', 'false'); idleEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (walkEl) { walkEl.setAttribute('visible', 'false'); walkEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (backEl) { backEl.setAttribute('visible', 'false'); backEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (runEl) { runEl.setAttribute('visible', 'false'); runEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (proneEl) { proneEl.setAttribute('visible', 'false'); proneEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (fireEl) { fireEl.setAttribute('visible', 'false'); fireEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (jumpEl) {
+            jumpEl.setAttribute('visible', 'true');
+            jumpEl.removeAttribute('animation-mixer');
+            jumpEl.setAttribute('animation-mixer', 'clip: *; loop: once; clampWhenFinished: true; timeScale: ' + currentTs);
+          }
+        } else if (this.lastState !== 'fire' && isFiringIdle && !isJump) {
+          this.lastState = 'fire';
+          if (idleEl) { idleEl.setAttribute('visible', 'false'); idleEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (walkEl) { walkEl.setAttribute('visible', 'false'); walkEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (backEl) { backEl.setAttribute('visible', 'false'); backEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (runEl) { runEl.setAttribute('visible', 'false'); runEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (proneEl) { proneEl.setAttribute('visible', 'false'); proneEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (jumpEl) { jumpEl.setAttribute('visible', 'false'); jumpEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (fireEl) { fireEl.setAttribute('visible', 'true'); fireEl.setAttribute('animation-mixer', 'timeScale: ' + currentTs); }
+        } else if (this.lastState !== 'idle' && isIdle) {
+          this.lastState = 'idle';
+          if (idleEl) { idleEl.setAttribute('visible', 'true'); idleEl.setAttribute('animation-mixer', 'timeScale: ' + currentTs); }
+          if (walkEl) { walkEl.setAttribute('visible', 'false'); walkEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (backEl) { backEl.setAttribute('visible', 'false'); walkEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (runEl) { runEl.setAttribute('visible', 'false'); runEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (proneEl) { proneEl.setAttribute('visible', 'false'); proneEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (jumpEl) { jumpEl.setAttribute('visible', 'false'); jumpEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (fireEl) { fireEl.setAttribute('visible', 'false'); fireEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+        } else if (this.lastState !== 'walk' && isWalking && !isJump) {
+          this.lastState = 'walk';
+          if (idleEl) { idleEl.setAttribute('visible', 'false'); idleEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (walkEl) { walkEl.setAttribute('visible', 'true'); walkEl.setAttribute('animation-mixer', 'timeScale: ' + currentTs); }
+          if (backEl) { backEl.setAttribute('visible', 'false'); backEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (runEl) { runEl.setAttribute('visible', 'false'); runEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (proneEl) { proneEl.setAttribute('visible', 'false'); proneEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (jumpEl) { jumpEl.setAttribute('visible', 'false'); jumpEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (fireEl) { fireEl.setAttribute('visible', 'false'); fireEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+        } else if (this.lastState !== 'back' && isWalkingBack && !isJump) {
+          this.lastState = 'back';
+          if (idleEl) { idleEl.setAttribute('visible', 'false'); idleEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (walkEl) { walkEl.setAttribute('visible', 'false'); walkEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (backEl) { backEl.setAttribute('visible', 'true'); backEl.setAttribute('animation-mixer', 'timeScale: ' + currentTs); }
+          if (runEl) { runEl.setAttribute('visible', 'false'); runEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (proneEl) { proneEl.setAttribute('visible', 'false'); proneEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (jumpEl) { jumpEl.setAttribute('visible', 'false'); jumpEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (fireEl) { fireEl.setAttribute('visible', 'false'); fireEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+        } else if (this.lastState !== 'run' && isRunning && !isJump) {
+          this.lastState = 'run';
+          if (idleEl) { idleEl.setAttribute('visible', 'false'); idleEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (walkEl) { walkEl.setAttribute('visible', 'false'); walkEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (backEl) { backEl.setAttribute('visible', 'false'); backEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (runEl) { runEl.setAttribute('visible', 'true'); runEl.setAttribute('animation-mixer', 'timeScale: ' + currentTs); }
+          if (proneEl) { proneEl.setAttribute('visible', 'false'); proneEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (jumpEl) { jumpEl.setAttribute('visible', 'false'); jumpEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (fireEl) { fireEl.setAttribute('visible', 'false'); fireEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+        } else if (this.lastState !== 'prone' && isProne && !isJump) {
+          this.lastState = 'prone';
+          if (idleEl) { idleEl.setAttribute('visible', 'false'); idleEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (walkEl) { walkEl.setAttribute('visible', 'false'); walkEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (backEl) { backEl.setAttribute('visible', 'false'); backEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (runEl) { runEl.setAttribute('visible', 'false'); runEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (proneEl) { proneEl.setAttribute('visible', 'true'); proneEl.setAttribute('animation-mixer', 'timeScale: ' + currentTs); }
+          if (jumpEl) { jumpEl.setAttribute('visible', 'false'); jumpEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (fireEl) { fireEl.setAttribute('visible', 'false'); fireEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+        }
+      }
+    });
+
+    // Componente para rotar la cámara arrastrando el dedo o usando el ratón en PC
+    AFRAME.registerComponent('touch-look', {
+      init: function () {
+        this.startX = 0;
+        this.startY = 0;
+        this.isDragging = false;
+
+        var self = this;
+
+        function startDrag(x, y) {
+          self.startX = x;
+          self.startY = y;
+          self.isDragging = true;
+        }
+
+        function moveDrag(x, y) {
+          if (!self.isDragging) return;
+
+          var deltaX = x - self.startX;
+          var deltaY = y - self.startY;
+
+          self.startX = x;
+          self.startY = y;
+
+          if (window.inspectMode) {
+            var avatar = document.getElementById('avatar-container');
+            if (avatar) {
+              avatar.object3D.rotation.y += deltaX * 0.01;
+              avatar.object3D.position.y -= deltaY * 0.005;
+            }
+            return;
+          }
+
+          var sensitivity = 0.005;
+
+          var yawWrapper = document.querySelector('#camera-yaw');
+          if (yawWrapper) {
+            yawWrapper.object3D.rotation.y -= deltaX * sensitivity;
+          }
+
+          var pitchWrapper = document.querySelector('#camera-pitch');
+          if (pitchWrapper) {
+            var newPitch = pitchWrapper.object3D.rotation.x - (deltaY * sensitivity);
+            pitchWrapper.object3D.rotation.x = Math.max(-1.4, Math.min(1.4, newPitch));
+          }
+        }
+
+        function endDrag() {
+          self.isDragging = false;
+        }
+
+        // Touch events
+        window.addEventListener('touchstart', function (e) {
+          if (e.touches.length > 0) startDrag(e.touches[0].pageX, e.touches[0].pageY);
+        });
+        window.addEventListener('touchmove', function (e) {
+          if (e.touches.length > 0) moveDrag(e.touches[0].pageX, e.touches[0].pageY);
+        });
+        window.addEventListener('touchend', endDrag);
+
+        // Zoom con la rueda del ratón
+        window.addEventListener('wheel', function (e) {
+          var camera = document.querySelector('a-camera');
+          if (camera) {
+            var currentFov = camera.getAttribute('fov') || 80;
+            var newFov = parseFloat(currentFov) + (e.deltaY * 0.05);
+            // Limitar qué tan cerca o lejos puedes hacer zoom (FOV entre 20 y 80)
+            newFov = Math.max(20, Math.min(80, newFov));
+            camera.setAttribute('fov', newFov);
+          }
+        });
+      }
+    });
+
+    // Componente nativo para las estrellas (reemplaza al plugin obsoleto)
+    AFRAME.registerComponent('star-system', {
+      schema: { count: { type: 'number', default: 2000 }, radius: { type: 'number', default: 250 } },
+      init: function () {
+        var geometry = new THREE.BufferGeometry();
+        var vertices = [];
+        for (var i = 0; i < this.data.count; i++) {
+          // Generar coordenadas esféricas aleatorias
+          var theta = 2 * Math.PI * Math.random();
+          var phi = Math.acos(2 * Math.random() - 1);
+          var distance = this.data.radius + (Math.random() * 50);
+          var x = distance * Math.sin(phi) * Math.cos(theta);
+          var y = distance * Math.sin(phi) * Math.sin(theta);
+          var z = distance * Math.cos(phi);
+          vertices.push(x, y, z);
+        }
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        var material = new THREE.PointsMaterial({ color: 0xffffff, size: 0.8, sizeAttenuation: true });
+        var points = new THREE.Points(geometry, material);
+        this.el.setObject3D('mesh', points);
+      }
+    });
+
+    // Componente para medir y mostrar los FPS
+    AFRAME.registerComponent('show-fps', {
+      tick: function (time, timeDelta) {
+        if (!this.lastTime) this.lastTime = time;
+        if (!this.frameCount) this.frameCount = 0;
+        this.frameCount++;
+
+        if (time - this.lastTime >= 1000) {
+          var fps = Math.round((this.frameCount * 1000) / (time - this.lastTime));
+          var fpsEl = document.getElementById('hud-fps');
+          if (fpsEl) fpsEl.innerText = 'FPS: ' + fps;
+          this.frameCount = 0;
+          this.lastTime = time;
+        }
+      }
+    });
+
+    // Bloqueo de rotación del cuerpo de físicas para que no ruede
+    AFRAME.registerComponent('rotation-lock', {
+      tick: function () {
+        var rot = this.el.object3D.rotation;
+        rot.x = 0;
+        rot.z = 0;
+        // Evita que el cuerpo físico (el cilindro) se caiga
+        if (this.el.body) {
+          this.el.body.angularVelocity.set(0, 0, 0);
+        }
+      }
+    });
+
+
+    // Componente para adjuntar el arma al hueso de la mano
+    AFRAME.registerComponent('attach-weapon', {
+      schema: {
+        src: { type: 'string' },
+        position: { type: 'vec3', default: { x: 0, y: 0, z: 0 } },
+        rotation: { type: 'vec3', default: { x: 270, y: 25, z: -100 } },
+        scale: { type: 'vec3', default: { x: 7, y: 7, z: 7 } }
+      },
+      init: function () {
+        var self = this;
+        var weaponAttached = false;
+
+        this.el.addEventListener('model-loaded', function (evt) {
+          if (weaponAttached || evt.target !== self.el) return;
+
+          var mesh = self.el.getObject3D('mesh');
+          if (!mesh) return;
+
+          var bestBone = null;
+          mesh.traverse(function (child) {
+            if (child.isBone) {
+              var n = child.name.toLowerCase();
+              if (n.includes('righthand') && !n.includes('thumb') && !n.includes('index') && !n.includes('middle') && !n.includes('ring') && !n.includes('pinky')) {
+                bestBone = child;
+              }
+            }
+          });
+
+          if (bestBone) {
+            var loader = new THREE.GLTFLoader();
+            var srcPath = document.querySelector(self.data.src).getAttribute('src');
+
+            function loadWeapon(loadCount) {
+              if (loadCount > 5) return;
+              loader.load(srcPath, function (gltf) {
+                var weaponMesh = gltf.scene;
+                bestBone.add(weaponMesh);
+                weaponMesh.position.set(self.data.position.x, self.data.position.y, self.data.position.z);
+                weaponMesh.rotation.set(THREE.MathUtils.degToRad(self.data.rotation.x), THREE.MathUtils.degToRad(self.data.rotation.y), THREE.MathUtils.degToRad(self.data.rotation.z));
+                weaponMesh.scale.set(self.data.scale.x, self.data.scale.y, self.data.scale.z);
+                weaponAttached = true;
+              }, undefined, function (error) {
+                setTimeout(function () { loadWeapon(loadCount + 1) }, 1000);
+              });
+            }
+            loadWeapon(1);
+          }
+        });
+      }
+    });
+
+    // Esperar a que cargue el modelo para aplicar las físicas de malla
+    AFRAME.registerComponent('mesh-collider', {
+      init: function () {
+        this.el.addEventListener('model-loaded', () => {
+          // Aumentar la precisión de CannonJS directamente en el motor para evitar que la esfera se hunda en el piso
+          if (this.el.sceneEl.systems.physics && this.el.sceneEl.systems.physics.driver) {
+            this.el.sceneEl.systems.physics.driver.world.iterations = 50;
+          }
+
+          // Reparación definitiva de físicas para GLTF complejos en CannonJS.
+          // En lugar de ponerle un cuerpo estático al modelo entero (lo cual falla y te hace atravesar paredes),
+          // extraemos cada malla individual, la clonamos, la desindexamos y le creamos un colisionador invisible exacto.
+          var obj = this.el.getObject3D('mesh');
+          if (obj) {
+            obj.traverse((node) => {
+              if (node.isMesh) {
+                var collider = document.createElement('a-entity');
+                var clonedMesh = node.clone();
+
+                // Desindexar para que CannonJS no falle
+                if (clonedMesh.geometry && clonedMesh.geometry.index) {
+                  clonedMesh.geometry = clonedMesh.geometry.toNonIndexed();
+                }
+
+                // Limpiar transformaciones locales de la malla clonada
+                clonedMesh.position.set(0, 0, 0);
+                clonedMesh.quaternion.identity();
+                clonedMesh.scale.set(1, 1, 1);
+
+                collider.setObject3D('mesh', clonedMesh);
+
+                // Copiar la posición, rotación y escala MUNDIAL exacta
+                var worldPos = new THREE.Vector3();
+                var worldQuat = new THREE.Quaternion();
+                var worldScale = new THREE.Vector3();
+                node.getWorldPosition(worldPos);
+                node.getWorldQuaternion(worldQuat);
+                node.getWorldScale(worldScale);
+
+                collider.object3D.position.copy(worldPos);
+                collider.object3D.quaternion.copy(worldQuat);
+                collider.object3D.scale.copy(worldScale);
+
+                collider.setAttribute('static-body', 'shape: mesh');
+                collider.setAttribute('visible', 'false');
+                this.el.sceneEl.appendChild(collider);
+              }
+            });
+          }
+
+          var rig = document.querySelector('#rig');
+          if (rig) {
+            // Eliminar el retraso de 500ms que congelaba los controles.
+            // Ejecutar el láser y encender físicas instantáneamente en el mismo frame.
+            var pos = rig.getAttribute('position');
+            // Disparar desde justo encima de ti (evita chocar con el techo y caer)
+            var raycaster = new THREE.Raycaster(new THREE.Vector3(pos.x, pos.y + 1.5, pos.z), new THREE.Vector3(0, -1, 0));
+            var intersects = raycaster.intersectObjects(this.el.sceneEl.object3D.children, true);
+
+            if (intersects.length > 0) {
+              rig.setAttribute('position', { x: pos.x, y: intersects[0].point.y + 0.35, z: pos.z });
+            } else {
+              rig.setAttribute('position', { x: pos.x, y: -3.08, z: pos.z }); // Suelo por defecto
+            }
+
+            // Encender físicas y gravedad SIN NINGÚN RETRASO
+            rig.setAttribute('dynamic-body', 'shape: sphere; mass: 65; sphereRadius: 0.35; linearDamping: 0.0; angularDamping: 1.0');
+          }
+        });
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <!-- Botón de Logs Solicitado -->
+  <div id="log-overlay">
+    <button id="log-button" onclick="copyLogs()"></button>
+  </div>
+
+  <div id="damage-overlay"></div>
+  <div id="game-over-screen">
+    <h1>ESTÁS MUERTO</h1>
+    <button class="go-btn" onclick="respawnPlayer()">Continuar</button>
+    <button class="go-btn" onclick="location.reload()">Nueva Partida</button>
+  </div>
+
+  <div id="hud-lives">
+    <div class="life-dot" id="life-1"></div>
+    <div class="life-dot" id="life-2"></div>
+    <div class="life-dot" id="life-3"></div>
+  </div>
+
+  <div id="hud-overlay">
+    <div id="hud-fps">FPS: 60</div>
+    <div id="hud-ammo">36</div>
+  </div>
+
+
+  <button id="vr-btn" onclick="document.querySelector('a-scene').enterVR()"></button>
+
+  <a-scene physics="debug: false" webxr="optionalFeatures: hit-test" touch-look vr-mode-ui="enabled: false"
+    renderer="antialias: true; colorManagement: true;" show-fps npc-manager shader-warmup>
+    <a-assets>
+      <a-asset-item id="edificio" src="low-poly_industrial_building.glb"></a-asset-item>
+
+
+      <!-- Arma pre-cargada en memoria -->
+      <a-asset-item id="rifle-model" src="m4a1rifle.glb"></a-asset-item>
+
+      <!-- Sonidos de armas para NPCs -->
+      <audio id="sonido-disparo" src="tiroAtiro.m4a" preload="auto"></audio>
+
+      <!-- Sonido de pasos del jugador -->
+      <audio id="sonido-pasos" src="step.mp3" preload="auto" loop></audio>
+
+      <!-- Música Ambiental -->
+      <audio id="sonido-ambiente" src="ambient.mp3" preload="auto" loop></audio>
+
+      <!-- Cargar los Avatares (Optimizados en peso de ~38MB a ~1.7MB con WebP) -->
+      <a-asset-item id="avatar-idle" src="Rifleidle-webp.glb"></a-asset-item>
+      <a-asset-item id="avatar-walk" src="Walking-webp.glb"></a-asset-item>
+      <a-asset-item id="avatar-back" src="WalkingBackwards-webp.glb"></a-asset-item>
+      <a-asset-item id="avatar-run" src="Running-webp.glb"></a-asset-item>
+      <a-asset-item id="avatar-prone" src="ProneForward-webp.glb"></a-asset-item>
+      <a-asset-item id="avatar-jump" src="JumpForward-webp.glb"></a-asset-item>
+      <a-asset-item id="avatar-fire" src="FiringRifle-webp.glb"></a-asset-item>
+    </a-assets>
+
+    <!-- Reproductor de Música Ambiental -->
+    <!-- (Eliminamos el componente a-entity sound y usamos HTML5 Audio directamente en JS para evitar bugs) -->
+
+    <!-- FONDO NOCTURNO BRILLANTE Y ESTRELLAS -->
+    <a-sky color="#05060A"></a-sky>
+    <!-- Cielo oscuro profundo -->
+    <a-entity star-system="count: 2000; radius: 250"></a-entity>
+
+    <!-- EL PISO GENERAL (Suelo exterior grueso de 10 metros para que nunca más caigas al vacío) -->
+    <a-box position="-50 -8.43 8" width="400" height="10" depth="400" color="#1a1a1a" static-body></a-box>
+
+    <!-- EL EDIFICIO: Centrado manualmente invirtiendo su desfase y con colisiones -->
+    <a-entity gltf-model="#edificio" position="-50 0 8" scale="1 1 1" mesh-collider></a-entity>
+
+    <!-- LUZ DE LUNA (Tenue azulada) -->
+    <a-light type="ambient" color="#2c3e50" intensity="0.5"></a-light>
+    <a-light type="directional" color="#8ab4f8" intensity="0.6" position="-1 2 1"></a-light>
+
+    <!-- JUGADOR -->
+    <a-entity id="rig" position="-17 -3.08 8" gamepad-fps rotation-lock weapon-system player-health>
+      <!-- La cámara envuelta en dos entidades para controlar Pitch y Yaw independientemente de las físicas -->
+      <a-entity id="camera-yaw" position="0 0 0">
+        <!-- RENDERIZADO DEL AVATAR 3D -->
+        <!-- Ahora dentro de camera-yaw para que el cuerpo gire a los lados exactamente como la cámara -->
+        <a-entity id="avatar-container" position="0 -0.35 0" rotation="0 180 0">
+          <a-entity id="model-idle" gltf-model="#avatar-idle" attach-weapon="src: #rifle-model"
+            animation-mixer="clip: *; loop: repeat; timeScale: 1" visible="true"></a-entity>
+          <a-entity id="model-walk" gltf-model="#avatar-walk" attach-weapon="src: #rifle-model"
+            animation-mixer="clip: *; loop: repeat; timeScale: 0" visible="false"></a-entity>
+          <a-entity id="model-back" gltf-model="#avatar-back" attach-weapon="src: #rifle-model"
+            animation-mixer="clip: *; loop: repeat; timeScale: 0" visible="false"></a-entity>
+          <a-entity id="model-run" gltf-model="#avatar-run" attach-weapon="src: #rifle-model"
+            animation-mixer="clip: *; loop: repeat; timeScale: 0" visible="false"></a-entity>
+          <a-entity id="model-prone" gltf-model="#avatar-prone" attach-weapon="src: #rifle-model"
+            animation-mixer="clip: *; loop: repeat; timeScale: 0" visible="false"></a-entity>
+          <a-entity id="model-jump" gltf-model="#avatar-jump" attach-weapon="src: #rifle-model"
+            animation-mixer="clip: *; loop: once; clampWhenFinished: true; timeScale: 0" visible="false"></a-entity>
+          <a-entity id="model-fire" gltf-model="#avatar-fire" attach-weapon="src: #rifle-model"
+            animation-mixer="clip: *; loop: repeat; timeScale: 0" visible="false"></a-entity>
+        </a-entity>
+        <a-entity id="camera-pitch" position="0 0 0">
+          <!-- CÁMARA PRIMERA PERSONA (VR) -->
+          <a-camera position="0.5 1.6 1.0" look-controls="enabled: true; magicWindowTrackingEnabled: false; pointerLockEnabled: false"
+            wasd-controls="enabled: false">
+            <!-- HUD: Retícula -->
+            <a-entity position="0 0 -1">
+              <a-entity geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.01"
+                material="color: red; shader: flat" position="0 0 0"></a-entity>
+            </a-entity>
+            <!-- CARTEL DE MUERTE VR -->
+            <a-text id="vr-death-text" value="ESTAS MUERTO\n\n[Y] CONTINUAR  --  [B] EMPEZAR DE NUEVO" position="0 0 -1.5" align="center" color="red" width="3.5" visible="false"></a-text>
+          </a-camera>
+        </a-entity>
+      </a-entity>
+    </a-entity>
+  </a-scene>
+</body>
+
+</html>
