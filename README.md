@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 # otroShooterVRtoo
 
+=======
+>>>>>>> 708dca4df8507643149ab760715761628c8af68b
 Es un shooter en 3D y Realidad Virtual (VR) en primera persona (CQB) diseñado para Android. El proyecto se basa en gráficos Low Poly y cuenta con soporte nativo para joysticks/mandos Bluetooth (como el modelo X3).
 
 ## 🚀 Características Principales
