@@ -211,7 +211,26 @@
       }
     });
 
-    window.gameStartTime = performance.now();
+      // Reparar desajuste de cámara al entrar a VR (Cambio automático Primera/Tercera persona)
+      AFRAME.registerComponent('vr-camera-fix', {
+        init: function () {
+          var scene = this.el;
+          scene.addEventListener('enter-vr', function () {
+            var camera = document.querySelector('a-camera');
+            var avatar = document.getElementById('avatar-container');
+            if (camera) camera.setAttribute('position', '0 1.6 -0.1'); // Mover a Primera Persona (adelante de la cara) para evitar atravesar paredes
+            if (avatar) avatar.setAttribute('visible', 'false'); // Ocultar cuerpo físico para que no tape la vista
+          });
+          scene.addEventListener('exit-vr', function () {
+            var camera = document.querySelector('a-camera');
+            var avatar = document.getElementById('avatar-container');
+            if (camera) camera.setAttribute('position', '0.5 1.6 1.0'); // Devolver a Tercera Persona
+            if (avatar) avatar.setAttribute('visible', 'true'); // Mostrar cuerpo
+          });
+        }
+      });
+
+      window.gameStartTime = performance.now();
     console.log("================ PERFORMANCE DEBUG ================");
     console.log("[PERF] Juego iniciado en t=0.00s");
 
@@ -241,8 +260,12 @@
 
         if (this.lives <= 0) this.gameOver();
       },
-      gameOver: function () {
-        this.gameOverScreen.style.display = 'flex';
+        gameOver: function () {
+          // Forzar salida de VR para poder tocar los botones de la UI en 2D
+          if (this.el.sceneEl.is('vr-mode')) {
+            this.el.sceneEl.exitVR();
+          }
+          this.gameOverScreen.style.display = 'flex';
         let deathText = document.getElementById('vr-death-text');
         if (deathText) deathText.setAttribute('visible', 'true');
         
@@ -483,7 +506,7 @@
           npc.setAttribute('class', 'npc-enemy');
           npc.setAttribute('npc-ai', '');
           // Usar físicas reales con esfera idéntica a la del jugador para garantizar inicialización
-          npc.setAttribute('dynamic-body', 'shape: sphere; sphereRadius: 0.35; mass: 65; linearDamping: 0.0');
+          npc.setAttribute('dynamic-body', 'shape: sphere; sphereRadius: 0.45; mass: 65; linearDamping: 0.0');
           npc.setAttribute('rotation-lock', '');
           npc.setAttribute('sound', 'src: #sonido-disparo; poolSize: 3; volume: 0.6');
 
@@ -1314,7 +1337,7 @@
         } else if (this.lastState !== 'prone' && isProne && !isJump) {
           this.lastState = 'prone';
           if (idleEl) { idleEl.setAttribute('visible', 'false'); idleEl.setAttribute('animation-mixer', 'timeScale: 0'); }
-          if (walkEl) { walkEl.setAttribute('visible', 'false'); walkEl.setAttribute('animation-mixer', 'timeScale: 0'); }
+          if (walkEl) { walkEl.setAttribute('visible', 'false'); idleEl.setAttribute('animation-mixer', 'timeScale: 0'); }
           if (backEl) { backEl.setAttribute('visible', 'false'); backEl.setAttribute('animation-mixer', 'timeScale: 0'); }
           if (runEl) { runEl.setAttribute('visible', 'false'); runEl.setAttribute('animation-mixer', 'timeScale: 0'); }
           if (proneEl) { proneEl.setAttribute('visible', 'true'); proneEl.setAttribute('animation-mixer', 'timeScale: ' + currentTs); }
@@ -1522,9 +1545,12 @@
                 var collider = document.createElement('a-entity');
                 var clonedMesh = node.clone();
 
-                // Desindexar para que CannonJS no falle
+                // Desindexar selectivamente para arreglar colisiones fantasma en pisos y escaleras
+                // Evitamos desindexar mallas gigantes para no causar OOM (Out of Memory) en móviles
                 if (clonedMesh.geometry && clonedMesh.geometry.index) {
-                  clonedMesh.geometry = clonedMesh.geometry.toNonIndexed();
+                  if (clonedMesh.geometry.index.count < 15000) {
+                    clonedMesh.geometry = clonedMesh.geometry.toNonIndexed();
+                  }
                 }
 
                 // Limpiar transformaciones locales de la malla clonada
@@ -1569,7 +1595,7 @@
             }
 
             // Encender físicas y gravedad SIN NINGÚN RETRASO
-            rig.setAttribute('dynamic-body', 'shape: sphere; mass: 65; sphereRadius: 0.35; linearDamping: 0.0; angularDamping: 1.0');
+            rig.setAttribute('dynamic-body', 'shape: sphere; mass: 65; sphereRadius: 0.45; linearDamping: 0.0; angularDamping: 1.0');
           }
         });
       }
@@ -1605,7 +1631,7 @@
   <button id="vr-btn" onclick="document.querySelector('a-scene').enterVR()"></button>
 
   <a-scene physics="debug: false" webxr="optionalFeatures: hit-test" touch-look vr-mode-ui="enabled: false"
-    renderer="antialias: true; colorManagement: true;" show-fps npc-manager shader-warmup>
+    renderer="antialias: true; colorManagement: true;" show-fps npc-manager shader-warmup vr-camera-fix>
     <a-assets>
       <a-asset-item id="edificio" src="low-poly_industrial_building.glb"></a-asset-item>
 
