@@ -113,13 +113,14 @@
     #hud-targets {
       display: flex;
       align-items: center;
-      gap: 6px;
-      color: rgba(255, 80, 80, 0.85);
+      gap: 8px;
+      color: rgba(255, 80, 80, 0.65);
     }
 
     #hud-targets .target-icon {
-      font-size: 20px;
-      opacity: 0.8;
+      width: 20px;
+      height: 20px;
+      opacity: 0.6;
       filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
     }
 
@@ -423,7 +424,7 @@
         return new THREE.CanvasTexture(canvas);
       }
 
-      // COMPONENTE PARA BLANCOS SORPRESA ABATIBLES (KILLHOUSE CQB)
+      // COMPONENTE PARA BLANCOS SORPRESA ABATIBLES (KILLHOUSE CQB) CON FÍSICAS ACTIVAS
       AFRAME.registerComponent('cqb-target', {
         schema: {
           triggerDist: { default: 9.5 }
@@ -466,6 +467,95 @@
           targetPivot.rotation.x = -Math.PI / 2;
           this.currentAngle = -Math.PI / 2;
           this.targetAngle = -Math.PI / 2;
+
+          // Inicializar colisiones físicas (erguido o en el piso)
+          this.standingBody = null;
+          this.fallenBody = null;
+          this.currentCollider = 'none';
+          this.initCollider();
+        },
+        getWorld: function () {
+          if (this.physicsWorld) return this.physicsWorld;
+          var sys = this.el.sceneEl.systems && this.el.sceneEl.systems.physics;
+          if (sys) {
+            if (sys.driver && sys.driver.world) {
+              this.physicsWorld = sys.driver.world;
+            } else if (sys.world) {
+              this.physicsWorld = sys.world;
+            }
+          }
+          return this.physicsWorld;
+        },
+        initCollider: function () {
+          if (this.standingBody && this.fallenBody) return;
+          var world = this.getWorld();
+          var CANNON = window.CANNON || 
+            (this.el.sceneEl.systems && this.el.sceneEl.systems.physics && this.el.sceneEl.systems.physics.driver && this.el.sceneEl.systems.physics.driver.CANNON);
+
+          if (!world || !CANNON) {
+            var self = this;
+            setTimeout(function () { self.initCollider(); }, 150);
+            return;
+          }
+
+          this.el.object3D.updateMatrixWorld(true);
+
+          // 1. Colisionador erguido (cuando el blanco se levanta: obstáculo vertical de 0.76 x 1.36m)
+          var standingPos = this.el.object3D.localToWorld(new THREE.Vector3(0, 0.675, 0));
+          var worldQuat = new THREE.Quaternion();
+          this.el.object3D.getWorldQuaternion(worldQuat);
+
+          var standingShape = new CANNON.Box(new CANNON.Vec3(0.38, 0.68, 0.08));
+          this.standingBody = new CANNON.Body({
+            mass: 0,
+            type: CANNON.Body.STATIC,
+            shape: standingShape,
+            position: new CANNON.Vec3(standingPos.x, standingPos.y, standingPos.z),
+            quaternion: new CANNON.Quaternion(worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w)
+          });
+
+          // 2. Colisionador en el suelo (cuando el blanco cae abatido: obstáculo táctico en el piso para saltar o rodear)
+          var fallenPos = this.el.object3D.localToWorld(new THREE.Vector3(0, 0.0, -0.675));
+          var fallenShape = new CANNON.Box(new CANNON.Vec3(0.38, 0.16, 0.68));
+          this.fallenBody = new CANNON.Body({
+            mass: 0,
+            type: CANNON.Body.STATIC,
+            shape: fallenShape,
+            position: new CANNON.Vec3(fallenPos.x, fallenPos.y, fallenPos.z),
+            quaternion: new CANNON.Quaternion(worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w)
+          });
+
+          var desired = this.pendingColliderState || (this.isPopped && !this.isHit ? 'standing' : 'fallen');
+          this.setColliderState(desired);
+        },
+        setColliderState: function (state) {
+          if (this.currentCollider === state) return;
+          var world = this.getWorld();
+          if (!world || !this.standingBody || !this.fallenBody) {
+            this.pendingColliderState = state;
+            return;
+          }
+
+          if (state === 'standing') {
+            if (this.currentCollider === 'fallen') {
+              world.removeBody(this.fallenBody);
+            }
+            world.addBody(this.standingBody);
+            this.currentCollider = 'standing';
+          } else if (state === 'fallen') {
+            if (this.currentCollider === 'standing') {
+              world.removeBody(this.standingBody);
+            }
+            world.addBody(this.fallenBody);
+            this.currentCollider = 'fallen';
+          } else if (state === 'none') {
+            if (this.currentCollider === 'standing') {
+              world.removeBody(this.standingBody);
+            } else if (this.currentCollider === 'fallen') {
+              world.removeBody(this.fallenBody);
+            }
+            this.currentCollider = 'none';
+          }
         },
         tick: function (time, delta) {
           if (!this.player) return;
@@ -496,6 +586,7 @@
           this.isPopped = true;
           this.targetAngle = 0;
           if (window.AudioFX) window.AudioFX.playPopUp();
+          this.setColliderState('standing');
         },
         hit: function (point, normal) {
           if (this.isHit) return;
@@ -507,6 +598,8 @@
           if (window.onTargetEliminated) {
             window.onTargetEliminated();
           }
+          // El colisionador permanece activo en el piso como obstáculo físico para saltar o rodear
+          this.setColliderState('fallen');
         },
         resetTarget: function () {
           this.isPopped = false;
@@ -514,8 +607,15 @@
           this.currentAngle = -Math.PI / 2;
           this.targetAngle = -Math.PI / 2;
           if (this.targetPivot) this.targetPivot.rotation.x = -Math.PI / 2;
+          this.setColliderState('fallen');
+        },
+        remove: function () {
+          this.setColliderState('none');
+          this.standingBody = null;
+          this.fallenBody = null;
         }
       });
+
 
       // GESTOR DE MISIÓN CQB Y CONTADOR DE BLANCOS
       AFRAME.registerComponent('tactical-mission', {
@@ -598,7 +698,7 @@
         updateHUD: function () {
           var countStr = window.remainingTargets.toString();
           if (this.hudCount) this.hudCount.textContent = countStr;
-          if (this.vrCount) this.vrCount.setAttribute('value', '🎯 ' + countStr);
+          if (this.vrCount) this.vrCount.setAttribute('value', countStr);
           this.updateTimerDisplay();
         }
       });
@@ -2326,7 +2426,14 @@
   <!-- HUD TÁCTICO MINIMALISTA (SEMISTRANSPARENTE, SIN RELLENO, SIN LETRAS) -->
   <div id="hud-tactical">
     <div id="hud-timer">00:00</div>
-    <div id="hud-targets"><span class="target-icon">🎯</span> <span id="target-count">50</span></div>
+    <div id="hud-targets">
+      <svg class="target-icon" viewBox="0 0 24 24" fill="none" stroke="#ff5555" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9.5"></circle>
+        <circle cx="12" cy="12" r="5.5"></circle>
+        <circle cx="12" cy="12" r="2" fill="#ff5555"></circle>
+      </svg>
+      <span id="target-count">50</span>
+    </div>
   </div>
 
   <div id="damage-overlay"></div>
@@ -2434,10 +2541,15 @@
                 <a-entity geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.01"
                   material="color: red; shader: flat" position="0 0 0"></a-entity>
               </a-entity>
-              <!-- HUD TÁCTICO FLOTANTE PARA VISOR VR (SEMISTRANSPARENTE, SIN LETRAS) -->
+              <!-- HUD TÁCTICO FLOTANTE PARA VISOR VR (SEMISTRANSPARENTE, SIN LETRAS, DIANA SIN FLECHA) -->
               <a-entity id="vr-hud-tactical" position="0 0.45 -1.1">
-                <a-text id="vr-hud-timer" value="00:00" align="right" position="-0.15 0 0" width="1.6" color="#ffffff" opacity="0.75"></a-text>
-                <a-text id="vr-hud-targets" value="🎯 50" align="left" position="0.15 0 0" width="1.6" color="#ff5555" opacity="0.85"></a-text>
+                <a-text id="vr-hud-timer" value="00:00" align="right" position="-0.15 0 0" width="1.6" color="#ffffff" opacity="0.65"></a-text>
+                <a-entity id="vr-target-group" position="0.12 0 0">
+                  <a-ring radius-inner="0.016" radius-outer="0.022" material="color: #ff5555; shader: flat; transparent: true; opacity: 0.6"></a-ring>
+                  <a-ring radius-inner="0.007" radius-outer="0.011" material="color: #ff5555; shader: flat; transparent: true; opacity: 0.6"></a-ring>
+                  <a-circle radius="0.003" material="color: #ff5555; shader: flat; transparent: true; opacity: 0.6"></a-circle>
+                  <a-text id="vr-hud-targets" value="50" align="left" position="0.038 0 0" width="1.6" color="#ff5555" opacity="0.65"></a-text>
+                </a-entity>
               </a-entity>
               <!-- CARTEL DE PAUSA VR -->
               <a-entity id="vr-pause-hud" position="0 0 -1.4" visible="false">
