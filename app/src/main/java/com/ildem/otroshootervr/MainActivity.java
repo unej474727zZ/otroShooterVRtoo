@@ -295,11 +295,15 @@ public class MainActivity extends Activity {
 
             float rightX = 0;
             float rightY = 0;
-            if (Math.abs(axisZ) > 0.1 || Math.abs(axisRZ) > 0.1) {
+            if (Math.abs(axisZ) > 0.12f) {
                 rightX = axisZ;
-                rightY = axisRZ;
-            } else if (Math.abs(axisRX) > 0.1 || Math.abs(axisRY) > 0.1) {
+            } else if (Math.abs(axisRX) > 0.12f) {
                 rightX = axisRX;
+            }
+
+            if (Math.abs(axisRZ) > 0.12f) {
+                rightY = axisRZ;
+            } else if (Math.abs(axisRY) > 0.12f) {
                 rightY = axisRY;
             }
 

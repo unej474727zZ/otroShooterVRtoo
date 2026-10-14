@@ -114,14 +114,14 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      color: rgba(255, 80, 80, 0.65);
+      color: rgba(0, 255, 102, 0.75);
     }
 
     #hud-targets .target-icon {
       width: 20px;
       height: 20px;
-      opacity: 0.6;
-      filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+      opacity: 0.7;
+      filter: drop-shadow(0 0 3px rgba(0, 255, 102, 0.5));
     }
 
     #hud-overlay {
@@ -268,6 +268,8 @@
             if (avatar) avatar.setAttribute('visible', 'false'); // Ocultar cuerpo físico en VR
             var offset = document.getElementById('camera-offset');
             if (offset) offset.setAttribute('position', '0 0 0'); // Primera persona en VR para no atravesar paredes
+            var pitchWrapper = document.getElementById('camera-pitch');
+            if (pitchWrapper) pitchWrapper.object3D.rotation.set(0, 0, 0); // Horizonte nivelado a cero
           });
           scene.addEventListener('exit-vr', function () {
             if (window.isFirstPerson) {
@@ -301,6 +303,59 @@
           } else {
             sceneEl.addEventListener('loaded', apply720p);
             sceneEl.addEventListener('render-target-loaded', apply720p);
+          }
+        }
+      });
+
+      // CALIBRADOR ÓPTICO VR (CONVERGENCIA Y ZOOM ESTEREOSCÓPICO L2 EN VIVO)
+      AFRAME.registerComponent('vr-optical-calibrator', {
+        init: function () {
+          var sceneEl = this.el;
+          var setupHook = function () {
+            var renderer = sceneEl.renderer;
+            if (!renderer || !renderer.xr) {
+              setTimeout(setupHook, 100);
+              return;
+            }
+
+            var origUpdateCamera = renderer.xr.updateCamera;
+            renderer.xr.updateCamera = function (camera) {
+              origUpdateCamera.call(this, camera);
+
+              var cameraVR = renderer.xr.getCamera();
+              if (cameraVR && cameraVR.cameras && cameraVR.cameras.length >= 2) {
+                var camL = cameraVR.cameras[0];
+                var camR = cameraVR.cameras[1];
+
+                // 1. Calibración óptica de convergencia (juntar o separar las dos imágenes de los ojos)
+                var offset = window.vrLensOffset || 0.0;
+                if (offset !== 0) {
+                  // elements[8] es el desplazamiento horizontal del centro óptico P(0,2) en Three.js
+                  camL.projectionMatrix.elements[8] += offset;
+                  camR.projectionMatrix.elements[8] -= offset;
+
+                  // Ajuste fino de la posición ocular en X
+                  camL.position.x -= offset * 0.08;
+                  camR.position.x += offset * 0.08;
+                }
+
+                // 2. Zoom Óptico L2 dentro del visor VR
+                if (window.isZoomingVR) {
+                  var zoomFactor = 1.75;
+                  camL.projectionMatrix.elements[0] *= zoomFactor;
+                  camL.projectionMatrix.elements[5] *= zoomFactor;
+                  camR.projectionMatrix.elements[0] *= zoomFactor;
+                  camR.projectionMatrix.elements[5] *= zoomFactor;
+                }
+              }
+            };
+            console.log('[VR] Calibrador óptico y Zoom L2 estéreo activados en WebXR.');
+          };
+
+          if (sceneEl.hasLoaded) {
+            setupHook();
+          } else {
+            sceneEl.addEventListener('loaded', setupHook);
           }
         }
       });
@@ -354,20 +409,20 @@
       };
       window.AudioFX = AudioFX;
 
-      // TEXTURA PROCEDURAL PARA DIANAS DE ENTRENAMIENTO CQB
+      // TEXTURA PROCEDURAL PARA DIANAS DE ENTRENAMIENTO CQB (ESTILO TÁCTICO VERDE NOCTURNO)
       function createTacticalTargetTexture() {
         var canvas = document.createElement('canvas');
         canvas.width = 256;
         canvas.height = 512;
         var ctx = canvas.getContext('2d');
 
-        // Fondo transparente
+        // Fondo transparente (sin base de cartón marrón)
         ctx.clearRect(0, 0, 256, 512);
 
-        // Silueta humanoide de cartón táctico
-        ctx.fillStyle = '#bda073';
-        ctx.strokeStyle = '#222222';
-        ctx.lineWidth = 4;
+        // Silueta humanoide táctica sigilosa (polímero oscuro semitransparente con borde verde)
+        ctx.fillStyle = 'rgba(10, 18, 12, 0.72)';
+        ctx.strokeStyle = '#00ff66';
+        ctx.lineWidth = 3.5;
 
         // Torso
         ctx.beginPath();
@@ -385,20 +440,20 @@
         ctx.fill();
         ctx.stroke();
 
-        // Zonas de impacto (Rojo táctico)
-        ctx.strokeStyle = '#8b0000';
+        // Zonas de impacto (Verde Táctico Visión Nocturna)
+        ctx.strokeStyle = '#00ff66';
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.arc(128, 90, 25, 0, Math.PI * 2);
         ctx.stroke();
 
-        ctx.fillStyle = '#cc0000';
+        ctx.fillStyle = '#00ff66';
         ctx.beginPath();
         ctx.arc(128, 90, 8, 0, Math.PI * 2);
         ctx.fill();
 
         // Pecho
-        ctx.strokeStyle = '#8b0000';
+        ctx.strokeStyle = '#00ff66';
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.ellipse(128, 270, 60, 80, 0, 0, Math.PI * 2);
@@ -408,13 +463,13 @@
         ctx.arc(128, 270, 35, 0, Math.PI * 2);
         ctx.stroke();
 
-        ctx.fillStyle = '#cc0000';
+        ctx.fillStyle = '#00ff66';
         ctx.beginPath();
         ctx.arc(128, 270, 12, 0, Math.PI * 2);
         ctx.fill();
 
-        // Líneas de encuadre
-        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+        // Líneas de encuadre tácticas
+        ctx.strokeStyle = 'rgba(0, 255, 102, 0.4)';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(128, 210); ctx.lineTo(128, 330);
@@ -455,13 +510,6 @@
           targetMesh.el = this.el; // Enlaza para raycasting
           targetPivot.add(targetMesh);
           this.targetMesh = targetMesh;
-
-          // Soporte base en el suelo
-          var baseGeo = new THREE.BoxGeometry(0.85, 0.06, 0.15);
-          var baseMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
-          var baseMesh = new THREE.Mesh(baseGeo, baseMat);
-          baseMesh.position.set(0, 0.03, 0);
-          this.el.object3D.add(baseMesh);
 
           // Inicia tumbado en el suelo
           targetPivot.rotation.x = -Math.PI / 2;
@@ -822,6 +870,11 @@
       if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
         if (window.toggleGamePause) window.toggleGamePause();
       }
+      if (e.key === 'ArrowLeft' || e.key === '[') {
+        if (window.adjustVRLensOffset) window.adjustVRLensOffset(-1);
+      } else if (e.key === 'ArrowRight' || e.key === ']') {
+        if (window.adjustVRLensOffset) window.adjustVRLensOffset(+1);
+      }
       let healthComp = document.getElementById('rig') ? document.getElementById('rig').components['player-health'] : null;
       if (healthComp && (healthComp.isDead || healthComp.lives <= 0)) {
         if (e.key === 'b' || e.key === 'B') {
@@ -911,6 +964,33 @@
         if (offset) offset.setAttribute('position', '0.45 -0.2 1.6');
         console.log('[CAM] Perspectiva: 3ª Persona (Sobre el hombro)');
       }
+    };
+
+    // CALIBRACIÓN ÓPTICA VR (CONVERGENCIA / DISTANCIA FOCAL DE LENTES)
+    window.vrLensOffset = parseFloat(localStorage.getItem('vr_lens_offset') || '0.0');
+    window.isZoomingVR = false;
+    window.adjustVRLensOffset = function (dir) {
+      var step = 0.02;
+      window.vrLensOffset += dir * step;
+      // Limitar entre -0.30 y +0.30 (ajuste de hasta 30 niveles)
+      window.vrLensOffset = Math.max(-0.30, Math.min(0.30, window.vrLensOffset));
+      localStorage.setItem('vr_lens_offset', window.vrLensOffset.toFixed(3));
+
+      var level = Math.round(window.vrLensOffset / step);
+      var sign = level > 0 ? '+' : '';
+      var msg = 'LENTE: ' + sign + level;
+
+      var fb = document.getElementById('vr-lens-feedback');
+      if (fb) {
+        fb.setAttribute('value', msg);
+        fb.setAttribute('visible', 'true');
+        if (window._lensFeedbackTimer) clearTimeout(window._lensFeedbackTimer);
+        window._lensFeedbackTimer = setTimeout(function () {
+          fb.setAttribute('visible', 'false');
+        }, 1800);
+      }
+
+      console.log('[VR CALIBRACIÓN] Offset de lente:', window.vrLensOffset.toFixed(3), 'Nivel:', sign + level);
     };
 
     function copyLogs() {
@@ -1571,7 +1651,7 @@
             targetEl.components['cqb-target'].hit(point, normal);
           }
           var woodGeo = new THREE.BoxGeometry(0.04, 0.04, 0.04);
-          var woodMat = new THREE.MeshBasicMaterial({ color: 0xd2b48c });
+          var woodMat = new THREE.MeshBasicMaterial({ color: 0x00ff66 });
           for (var i = 0; i < 3; i++) {
             var splinter = new THREE.Mesh(woodGeo, woodMat);
             splinter.position.copy(point);
@@ -1659,13 +1739,17 @@
       },
 
       addRecoil: function () {
-        var pitchWrapper = document.querySelector('#camera-pitch');
-        if (pitchWrapper) {
-          // Recoil visual hacia arriba
-          pitchWrapper.object3D.rotation.x += 0.015;
-          setTimeout(() => {
-            pitchWrapper.object3D.rotation.x -= 0.015;
-          }, 50);
+        var sceneEl = this.el.sceneEl;
+        var inVR = sceneEl ? sceneEl.is('vr-mode') : false;
+        if (!inVR) {
+          var pitchWrapper = document.querySelector('#camera-pitch');
+          if (pitchWrapper) {
+            // Recoil visual hacia arriba (solo en pantalla plana)
+            pitchWrapper.object3D.rotation.x += 0.015;
+            setTimeout(() => {
+              pitchWrapper.object3D.rotation.x -= 0.015;
+            }, 50);
+          }
         }
       },
 
@@ -1788,28 +1872,53 @@
 
 
 
-        // CAMBIO DE VISTA 1ª / 3ª PERSONA CON LA CRUZ DEL MANDO (D-PAD)
-        var dpadPressed = false;
+        // --- CONTROL D-PAD (LA CRUZ DEL MANDO) ---
+        // 1. ARRIBA / ABAJO: Alternar 1ª / 3ª Persona
+        var dpadUpDown = false;
         if (window.AndroidGamepad) {
-          dpadPressed = window.AndroidGamepad.getDpadUp() || 
-                        window.AndroidGamepad.getDpadDown() || 
-                        window.AndroidGamepad.getDpadLeft() || 
-                        window.AndroidGamepad.getDpadRight();
+          dpadUpDown = window.AndroidGamepad.getDpadUp() || window.AndroidGamepad.getDpadDown();
         } else if (gp) {
-          var b12 = gp.buttons[12] ? (gp.buttons[12].value > 0.6) : false;
-          var b13 = gp.buttons[13] ? (gp.buttons[13].value > 0.6) : false;
-          var b14 = gp.buttons[14] ? (gp.buttons[14].value > 0.6) : false;
-          var b15 = gp.buttons[15] ? (gp.buttons[15].value > 0.6) : false;
-          dpadPressed = b12 || b13 || b14 || b15;
+          var b12 = gp.buttons[12] ? (gp.buttons[12].value > 0.6 || gp.buttons[12].pressed) : false;
+          var b13 = gp.buttons[13] ? (gp.buttons[13].value > 0.6 || gp.buttons[13].pressed) : false;
+          dpadUpDown = b12 || b13;
         }
 
-        if (dpadPressed) {
-          if (!this.dpadHeld) {
-            this.dpadHeld = true;
+        if (dpadUpDown) {
+          if (!this.dpadUpDownHeld) {
+            this.dpadUpDownHeld = true;
             if (window.togglePerspective) window.togglePerspective();
           }
         } else {
-          this.dpadHeld = false;
+          this.dpadUpDownHeld = false;
+        }
+
+        // 2. IZQUIERDA / DERECHA: Calibrar lentes VR (Graduar convergencia / IPD para quitar visión doble)
+        var dpadLeft = false;
+        var dpadRight = false;
+        if (window.AndroidGamepad) {
+          dpadLeft = window.AndroidGamepad.getDpadLeft();
+          dpadRight = window.AndroidGamepad.getDpadRight();
+        } else if (gp) {
+          dpadLeft = gp.buttons[14] ? (gp.buttons[14].value > 0.6 || gp.buttons[14].pressed) : false;
+          dpadRight = gp.buttons[15] ? (gp.buttons[15].value > 0.6 || gp.buttons[15].pressed) : false;
+        }
+
+        if (dpadLeft) {
+          if (!this.dpadLeftHeld) {
+            this.dpadLeftHeld = true;
+            if (window.adjustVRLensOffset) window.adjustVRLensOffset(-1);
+          }
+        } else {
+          this.dpadLeftHeld = false;
+        }
+
+        if (dpadRight) {
+          if (!this.dpadRightHeld) {
+            this.dpadRightHeld = true;
+            if (window.adjustVRLensOffset) window.adjustVRLensOffset(+1);
+          }
+        } else {
+          this.dpadRightHeld = false;
         }
 
         // COPIAR Y ENVIAR LOGS CON BOTÓN SELECT DEL CONTROL
@@ -1864,6 +1973,8 @@
           zoomPressed = (b6Val > 0.75);
         }
 
+        window.isZoomingVR = zoomPressed; // Zoom óptico activo tanto en pantalla como en VR
+
         var camera = document.querySelector('a-camera');
         if (camera) {
           var targetFov = zoomPressed ? 35 : 80; // FOV 35 cuando apuntas con L2, 80 vista amplia normal
@@ -1911,6 +2022,19 @@
         var dtFactor = (timeDelta || 16.666) / 16.666;
         if (dtFactor > 2) dtFactor = 2; // Límite para evitar giros bruscos en lag spikes
 
+        var sceneEl = this.el.sceneEl;
+        var inVR = sceneEl ? sceneEl.is('vr-mode') : false;
+
+        // AISLAMIENTO AXIAL (ANTI-MAREO):
+        // Desacopla estrictamente los ejes de la palanca derecha.
+        var absX = Math.abs(nrX);
+        var absY = Math.abs(nrY);
+        if (absY > 0.12 && absY > absX * 1.1) {
+          nrX = 0; // Cero giro horizontal al mover arriba o abajo
+        } else if (absX > 0.12 && absX > absY * 1.1) {
+          nrY = 0; // Cero movimiento vertical al girar a los lados
+        }
+
         if (window.inspectMode) {
           var avatar = document.getElementById('avatar-container');
           if (avatar) {
@@ -1918,15 +2042,43 @@
             if (nrY !== 0) avatar.object3D.position.y -= nrY * 0.02 * dtFactor;
           }
         } else {
+          // 1. ROTACIÓN HORIZONTAL (YAW)
+          // Activo en modo normal Y en modo VR:
+          // Gira al jugador suavemente hacia los lados con la palanca derecha.
+          // Rota exclusivamente sobre el eje vertical Y (0, 1, 0) del mundo,
+          // por lo que el horizonte permanece 100% PLANO y NIVELADO sin ladeos ni mareos.
           if (nrX !== 0) {
             if (yawWrapper) yawWrapper.object3D.rotation.y -= nrX * 0.04 * dtFactor;
           }
-          // Rotacion vertical con joystick activada
-          if (nrY !== 0) {
+
+          // 2. INCLINACIÓN VERTICAL (PITCH)
+          if (inVR) {
+            // EN MODO VR:
+            // Mirar arriba y abajo lo hace el cuello/cabeza del jugador de forma natural con el giroscopio.
+            // Bloqueamos pitchWrapper estrictamente a 0 en VR porque cualquier inclinación del rig
+            // genera un producto vectorial con la orientación de la cabeza que ladea el horizonte
+            // lateralmente en diagonal (Dutch roll) y causa mareo.
             if (pitchWrapper) {
-              var newPitch = pitchWrapper.object3D.rotation.x - (nrY * 0.04 * dtFactor);
-              pitchWrapper.object3D.rotation.x = Math.max(-1.4, Math.min(1.4, newPitch));
+              pitchWrapper.object3D.rotation.set(0, 0, 0);
             }
+          } else {
+            // EN MODO PANTALLA NORMAL (NO VR):
+            // La palanca derecha controla la mirada vertical libremente arriba y abajo.
+            if (nrY !== 0) {
+              if (pitchWrapper) {
+                var newPitch = pitchWrapper.object3D.rotation.x - (nrY * 0.04 * dtFactor);
+                pitchWrapper.object3D.rotation.x = Math.max(-1.4, Math.min(1.4, newPitch));
+              }
+            }
+          }
+
+          if (pitchWrapper) {
+            pitchWrapper.object3D.rotation.y = 0;
+            pitchWrapper.object3D.rotation.z = 0;
+          }
+          if (yawWrapper) {
+            yawWrapper.object3D.rotation.x = 0;
+            yawWrapper.object3D.rotation.z = 0;
           }
         }
 
@@ -2206,10 +2358,14 @@
             yawWrapper.object3D.rotation.y -= deltaX * sensitivity;
           }
 
-          var pitchWrapper = document.querySelector('#camera-pitch');
-          if (pitchWrapper) {
-            var newPitch = pitchWrapper.object3D.rotation.x - (deltaY * sensitivity);
-            pitchWrapper.object3D.rotation.x = Math.max(-1.4, Math.min(1.4, newPitch));
+          var scene = document.querySelector('a-scene');
+          var inVR = scene ? scene.is('vr-mode') : false;
+          if (!inVR) {
+            var pitchWrapper = document.querySelector('#camera-pitch');
+            if (pitchWrapper) {
+              var newPitch = pitchWrapper.object3D.rotation.x - (deltaY * sensitivity);
+              pitchWrapper.object3D.rotation.x = Math.max(-1.4, Math.min(1.4, newPitch));
+            }
           }
         }
 
@@ -2427,10 +2583,10 @@
   <div id="hud-tactical">
     <div id="hud-timer">00:00</div>
     <div id="hud-targets">
-      <svg class="target-icon" viewBox="0 0 24 24" fill="none" stroke="#ff5555" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="target-icon" viewBox="0 0 24 24" fill="none" stroke="#00ff66" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="9.5"></circle>
         <circle cx="12" cy="12" r="5.5"></circle>
-        <circle cx="12" cy="12" r="2" fill="#ff5555"></circle>
+        <circle cx="12" cy="12" r="2" fill="#00ff66"></circle>
       </svg>
       <span id="target-count">50</span>
     </div>
@@ -2462,7 +2618,7 @@
   <button id="vr-btn" onclick="document.querySelector('a-scene').enterVR()"></button>
 
   <a-scene physics="debug: false" webxr="optionalFeatures: hit-test" vr-mode-ui="enabled: false"
-    renderer="antialias: false; colorManagement: true;" show-fps npc-manager shader-warmup vr-camera-fix performance-scaler tactical-mission="totalTargets: 50">
+    renderer="antialias: false; colorManagement: true;" show-fps npc-manager shader-warmup vr-camera-fix performance-scaler vr-optical-calibrator tactical-mission="totalTargets: 50">
     <a-assets>
       <a-asset-item id="edificio" src="low-poly_industrial_building.glb"></a-asset-item>
 
@@ -2536,21 +2692,23 @@
             <!-- CÁMARA HÍBRIDA (3ra Persona sobre el hombro por defecto, conmutable a 1ra con D-Pad) -->
             <a-camera position="0 1.6 0" look-controls="enabled: false; magicWindowTrackingEnabled: false; pointerLockEnabled: false"
               wasd-controls="enabled: false">
-              <!-- HUD: Retícula -->
+              <!-- HUD: Retícula Roja (Mira del rifle) -->
               <a-entity position="0 0 -1">
                 <a-entity geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.01"
-                  material="color: red; shader: flat" position="0 0 0"></a-entity>
+                  material="color: #ff2222; shader: flat" position="0 0 0"></a-entity>
               </a-entity>
-              <!-- HUD TÁCTICO FLOTANTE PARA VISOR VR (SEMISTRANSPARENTE, SIN LETRAS, DIANA SIN FLECHA) -->
-              <a-entity id="vr-hud-tactical" position="0 0.45 -1.1">
-                <a-text id="vr-hud-timer" value="00:00" align="right" position="-0.15 0 0" width="1.6" color="#ffffff" opacity="0.65"></a-text>
-                <a-entity id="vr-target-group" position="0.12 0 0">
-                  <a-ring radius-inner="0.016" radius-outer="0.022" material="color: #ff5555; shader: flat; transparent: true; opacity: 0.6"></a-ring>
-                  <a-ring radius-inner="0.007" radius-outer="0.011" material="color: #ff5555; shader: flat; transparent: true; opacity: 0.6"></a-ring>
-                  <a-circle radius="0.003" material="color: #ff5555; shader: flat; transparent: true; opacity: 0.6"></a-circle>
-                  <a-text id="vr-hud-targets" value="50" align="left" position="0.038 0 0" width="1.6" color="#ff5555" opacity="0.65"></a-text>
+              <!-- HUD TÁCTICO FLOTANTE PARA VISOR VR (CENTRADO Y COMPACTO PARA NO CORTARSE EN LAS LENTES) -->
+              <a-entity id="vr-hud-tactical" position="0 0.38 -1.1">
+                <a-text id="vr-hud-timer" value="00:00" align="right" position="-0.07 0 0" width="1.6" color="#ffffff" opacity="0.75"></a-text>
+                <a-entity id="vr-target-group" position="0.04 0 0">
+                  <a-ring radius-inner="0.015" radius-outer="0.021" material="color: #00ff66; shader: flat; transparent: true; opacity: 0.7"></a-ring>
+                  <a-ring radius-inner="0.007" radius-outer="0.011" material="color: #00ff66; shader: flat; transparent: true; opacity: 0.7"></a-ring>
+                  <a-circle radius="0.003" material="color: #00ff66; shader: flat; transparent: true; opacity: 0.7"></a-circle>
+                  <a-text id="vr-hud-targets" value="50" align="left" position="0.035 0 0" width="1.6" color="#00ff66" opacity="0.75"></a-text>
                 </a-entity>
               </a-entity>
+              <!-- FEEDBACK DE CALIBRACIÓN ÓPTICA VR (LENTES) -->
+              <a-text id="vr-lens-feedback" value="" position="0 0.22 -1.1" align="center" color="#00ff66" width="2.4" opacity="0.9" visible="false"></a-text>
               <!-- CARTEL DE PAUSA VR -->
               <a-entity id="vr-pause-hud" position="0 0 -1.4" visible="false">
                 <a-text value="PAUSA\n\n[START] REANUDAR" align="center" color="#ffbb00" width="3.2"></a-text>

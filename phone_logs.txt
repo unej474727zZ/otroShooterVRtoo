@@ -114,3 +114,239 @@
 [1:59:44 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
 [1:59:45 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
 [1:59:45 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+
+================ LOGS RECIBIDOS (14/10/2026, 6:00:14 p. m.) ================
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.41s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.52s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.58s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.58s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.59s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.59s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.59s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.59s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.59s
+[5:57:22 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[5:57:22 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=0.90s
+[5:57:22 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[5:57:23 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[5:57:23 p.m.] [INFO] [VR] Calibrador óptico y Zoom L2 estéreo activados en WebXR.
+[5:57:23 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[5:57:23 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[5:57:23 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[5:57:23 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[5:57:44 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[5:57:44 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[5:57:47 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[5:57:51 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[5:57:52 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[5:58:09 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.020 Nivel: +1
+[5:58:09 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.040 Nivel: +2
+[5:58:10 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.020 Nivel: +1
+[5:58:11 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[5:58:11 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[5:58:12 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[5:58:12 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[5:58:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[5:58:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[5:58:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[5:58:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[5:58:19 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[5:58:35 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00),7(0.67)]
+[5:58:38 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[5:58:43 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[5:59:06 p.m.] [INFO] [NPC] Asesinatos: 1
+[5:59:11 p.m.] [INFO] [NPC] Asesinatos: 2
+[5:59:16 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:59:16 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:59:58 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [7(0.64)]
+[6:00:04 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[6:00:07 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [7(1.00)]
+
+================ LOGS RECIBIDOS (14/10/2026, 6:09:27 p. m.) ================
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.41s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.52s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.58s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.58s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.59s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.59s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.59s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.59s
+[5:57:22 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.59s
+[5:57:22 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[5:57:22 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=0.90s
+[5:57:22 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[5:57:23 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[5:57:23 p.m.] [INFO] [VR] Calibrador óptico y Zoom L2 estéreo activados en WebXR.
+[5:57:23 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[5:57:23 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[5:57:23 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[5:57:23 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[5:57:44 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[5:57:44 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[5:57:47 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[5:57:51 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[5:57:52 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[5:58:09 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.020 Nivel: +1
+[5:58:09 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.040 Nivel: +2
+[5:58:10 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.020 Nivel: +1
+[5:58:11 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[5:58:11 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[5:58:12 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[5:58:12 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[5:58:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[5:58:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[5:58:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[5:58:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[5:58:19 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[5:58:35 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00),7(0.67)]
+[5:58:38 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[5:58:43 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[5:59:06 p.m.] [INFO] [NPC] Asesinatos: 1
+[5:59:11 p.m.] [INFO] [NPC] Asesinatos: 2
+[5:59:16 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:59:16 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:59:58 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [7(0.64)]
+[6:00:04 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[6:00:07 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [7(1.00)]
+[6:00:14 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+[6:01:35 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[6:01:35 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[6:01:35 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[6:01:36 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+[6:01:36 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.100 Nivel: -5
+[6:01:36 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.120 Nivel: -6
+[6:01:38 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.140 Nivel: -7
+[6:01:39 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[6:01:40 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[6:01:40 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[6:01:40 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [14(1.00)]
+[6:01:40 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:01:40 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:01:41 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[6:01:41 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:01:41 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:01:41 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:01:42 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:02:42 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:02:46 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:02:47 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:02:48 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:02:49 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:02:50 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:03:26 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:03:39 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[6:03:40 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:03:41 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:03:45 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[6:03:46 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:03:47 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:03:47 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:03:49 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:04:11 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[6:04:11 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[6:04:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[6:04:30 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:04:33 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:04:57 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[6:04:58 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.280 Nivel: -14
+[6:04:58 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [14(1.00)]
+[6:04:58 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[6:04:59 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[6:04:59 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.280 Nivel: -14
+[6:04:59 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:05:00 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[6:05:01 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:05:04 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:05:06 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[6:05:06 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [15(1.00)]
+[6:05:06 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[6:05:06 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[6:05:06 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.140 Nivel: -7
+[6:05:07 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[6:05:08 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[6:05:11 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[6:05:11 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:05:12 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:05:25 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:05:27 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:05:28 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:05:29 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:05:47 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[6:05:48 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:05:48 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:05:48 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:05:49 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:05:50 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:05:50 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[6:05:51 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[6:05:51 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[6:05:51 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:06:28 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:06:35 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[6:06:35 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:06:36 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:06:37 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[6:06:43 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[6:06:44 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[6:06:44 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:06:45 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:06:46 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:06:46 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:07:59 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:08:00 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:08:00 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:08:05 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:08:13 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:08:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[6:08:16 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:08:19 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:08:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:08:30 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[6:08:34 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[6:08:34 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[6:08:37 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:08:37 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.140 Nivel: -7
+[6:08:37 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[6:08:38 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[6:08:38 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[6:08:39 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[6:08:39 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[6:08:46 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:08:56 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[6:08:57 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[6:09:04 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+
+================ LOGS RECIBIDOS (14/10/2026, 6:24:10 p. m.) ================
+[6:21:38 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.57s
+[6:21:38 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.69s
+[6:21:38 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.69s
+[6:21:38 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.69s
+[6:21:38 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.69s
+[6:21:38 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.69s
+[6:21:38 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.70s
+[6:21:39 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[6:21:39 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=1.15s
+[6:21:39 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[6:21:40 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[6:21:40 p.m.] [INFO] [VR] Calibrador óptico y Zoom L2 estéreo activados en WebXR.
+[6:21:40 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[6:21:40 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[6:21:40 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[6:21:40 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[6:21:47 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[6:22:05 p.m.] [INFO] [NPC] Asesinatos: 1
+[6:22:10 p.m.] [INFO] [NPC] Asesinatos: 2
+[6:22:15 p.m.] [INFO] [NPC] Asesinatos: 3
+[6:22:34 p.m.] [INFO] [NPC] Asesinatos: 4
+[6:22:41 p.m.] [INFO] [NPC] Asesinatos: 5
+[6:22:49 p.m.] [INFO] [NPC] Asesinatos: 6
+[6:23:17 p.m.] [INFO] [NPC] Asesinatos: 7
+[6:23:24 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[6:23:24 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[6:23:31 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[6:23:37 p.m.] [INFO] [NPC] Asesinatos: 8
+[6:23:46 p.m.] [INFO] [NPC] Asesinatos: 9
+[6:23:49 p.m.] DIAGNÓSTICO EJES: [0.00, -1.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[6:23:53 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[6:23:53 p.m.] [INFO] %ccomponents:sound:warn %cSound not loaded yet. It will be played once it finished loading%c  color: orange color: inherit color: orange
+[6:24:02 p.m.] DIAGNÓSTICO EJES: [0.00, -1.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
