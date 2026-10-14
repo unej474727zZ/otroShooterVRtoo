@@ -26,18 +26,31 @@
   <style>
     #log-overlay {
       position: absolute;
-      top: 20px;
-      left: 20px;
+      top: 15px;
+      right: 15px;
       z-index: 9999;
       pointer-events: auto;
     }
 
     #log-button {
-      background: red;
-      border: none;
-      width: 20px;
-      height: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
       cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s;
+    }
+    #log-button:active {
+      transform: scale(0.9);
+      background: rgba(255, 255, 255, 0.3);
     }
 
     #inspect-btn {
@@ -73,19 +86,53 @@
       pointer-events: auto;
     }
 
-    #hud-overlay {
+    /* HUD TÁCTICO MINIMALISTA (SEMISTRANSPARENTE, SIN RELLENO, SIN LETRAS) */
+    #hud-tactical {
       position: absolute;
-      top: 20px;
-      left: 50px;
-      /* Separado del cuadro rojo */
-      position: absolute;
-      top: 20px;
-      left: 50px;
+      top: 18px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
       z-index: 9998;
       pointer-events: none;
       font-family: monospace;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: bold;
+      color: rgba(255, 255, 255, 0.7);
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.9);
+      background: none;
+      border: none;
+    }
+
+    #hud-timer {
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    #hud-targets {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: rgba(255, 80, 80, 0.85);
+    }
+
+    #hud-targets .target-icon {
+      font-size: 20px;
+      opacity: 0.8;
+      filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+    }
+
+    #hud-overlay {
+      position: absolute;
+      top: 50px;
+      left: 20px;
+      z-index: 9998;
+      pointer-events: none;
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: bold;
+      opacity: 0.6;
     }
 
     #hud-fps {
@@ -216,17 +263,343 @@
         init: function () {
           var scene = this.el;
           scene.addEventListener('enter-vr', function () {
-            var camera = document.querySelector('a-camera');
             var avatar = document.getElementById('avatar-container');
-            if (camera) camera.setAttribute('position', '0 1.6 -0.1'); // Mover a Primera Persona (adelante de la cara) para evitar atravesar paredes
-            if (avatar) avatar.setAttribute('visible', 'false'); // Ocultar cuerpo físico para que no tape la vista
+            if (avatar) avatar.setAttribute('visible', 'false'); // Ocultar cuerpo físico en VR
+            var offset = document.getElementById('camera-offset');
+            if (offset) offset.setAttribute('position', '0 0 0'); // Primera persona en VR para no atravesar paredes
           });
           scene.addEventListener('exit-vr', function () {
-            var camera = document.querySelector('a-camera');
-            var avatar = document.getElementById('avatar-container');
-            if (camera) camera.setAttribute('position', '0.5 1.6 1.0'); // Devolver a Tercera Persona
-            if (avatar) avatar.setAttribute('visible', 'true'); // Mostrar cuerpo
+            if (window.isFirstPerson) {
+              var avatar = document.getElementById('avatar-container');
+              if (avatar) avatar.setAttribute('visible', 'false');
+              var offset = document.getElementById('camera-offset');
+              if (offset) offset.setAttribute('position', '0 0 0');
+            } else {
+              var avatar = document.getElementById('avatar-container');
+              if (avatar) avatar.setAttribute('visible', 'true');
+              var offset = document.getElementById('camera-offset');
+              if (offset) offset.setAttribute('position', '0.45 -0.2 1.6');
+            }
           });
+        }
+      });
+
+      // OPTIMIZACIÓN A 720p (ESCALA DE RESOLUCIÓN PARA MÁXIMA FLUIDEZ)
+      AFRAME.registerComponent('performance-scaler', {
+        init: function () {
+          var sceneEl = this.el;
+          var apply720p = function () {
+            if (sceneEl.renderer) {
+              var optimalDPR = Math.min(window.devicePixelRatio || 1, 1.0);
+              sceneEl.renderer.setPixelRatio(optimalDPR);
+              console.log('[PERF] Resolución 720p activada. DPR:', optimalDPR);
+            }
+          };
+          if (sceneEl.hasLoaded) {
+            apply720p();
+          } else {
+            sceneEl.addEventListener('loaded', apply720p);
+            sceneEl.addEventListener('render-target-loaded', apply720p);
+          }
+        }
+      });
+
+      // EFECTOS DE SONIDO TÁCTICOS PROCEDURALES (CERO LATENCIA / CERO DESCARGAS)
+      var AudioFX = {
+        ctx: null,
+        init: function () {
+          if (!this.ctx) {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (AC) this.ctx = new AC();
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(function () { });
+          }
+        },
+        playPopUp: function () {
+          try {
+            this.init();
+            if (!this.ctx) return;
+            var osc = this.ctx.createOscillator();
+            var gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(170, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(35, this.ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.08);
+          } catch (e) { }
+        },
+        playTargetHit: function () {
+          try {
+            this.init();
+            if (!this.ctx) return;
+            var osc = this.ctx.createOscillator();
+            var gain = this.ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(340, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(70, this.ctx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.45, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.12);
+          } catch (e) { }
+        }
+      };
+      window.AudioFX = AudioFX;
+
+      // TEXTURA PROCEDURAL PARA DIANAS DE ENTRENAMIENTO CQB
+      function createTacticalTargetTexture() {
+        var canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 512;
+        var ctx = canvas.getContext('2d');
+
+        // Fondo transparente
+        ctx.clearRect(0, 0, 256, 512);
+
+        // Silueta humanoide de cartón táctico
+        ctx.fillStyle = '#bda073';
+        ctx.strokeStyle = '#222222';
+        ctx.lineWidth = 4;
+
+        // Torso
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(40, 160, 176, 330, [20, 20, 0, 0]);
+        } else {
+          ctx.rect(40, 160, 176, 330);
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        // Cabeza
+        ctx.beginPath();
+        ctx.ellipse(128, 90, 50, 65, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Zonas de impacto (Rojo táctico)
+        ctx.strokeStyle = '#8b0000';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(128, 90, 25, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = '#cc0000';
+        ctx.beginPath();
+        ctx.arc(128, 90, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pecho
+        ctx.strokeStyle = '#8b0000';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(128, 270, 60, 80, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(128, 270, 35, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = '#cc0000';
+        ctx.beginPath();
+        ctx.arc(128, 270, 12, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Líneas de encuadre
+        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(128, 210); ctx.lineTo(128, 330);
+        ctx.moveTo(68, 270); ctx.lineTo(188, 270);
+        ctx.stroke();
+
+        return new THREE.CanvasTexture(canvas);
+      }
+
+      // COMPONENTE PARA BLANCOS SORPRESA ABATIBLES (KILLHOUSE CQB)
+      AFRAME.registerComponent('cqb-target', {
+        schema: {
+          triggerDist: { default: 9.5 }
+        },
+        init: function () {
+          this.isPopped = false;
+          this.isHit = false;
+          this.player = document.querySelector('#rig');
+
+          this.el.classList.add('cqb-target');
+
+          var targetPivot = new THREE.Group();
+          this.targetPivot = targetPivot;
+          this.el.object3D.add(targetPivot);
+
+          if (!window.tacticalTargetTexture) {
+            window.tacticalTargetTexture = createTacticalTargetTexture();
+          }
+
+          var targetGeo = new THREE.PlaneGeometry(0.75, 1.35);
+          var targetMat = new THREE.MeshBasicMaterial({
+            map: window.tacticalTargetTexture,
+            transparent: true,
+            side: THREE.DoubleSide
+          });
+          var targetMesh = new THREE.Mesh(targetGeo, targetMat);
+          targetMesh.position.set(0, 0.675, 0); // Pivote en la base
+          targetMesh.el = this.el; // Enlaza para raycasting
+          targetPivot.add(targetMesh);
+          this.targetMesh = targetMesh;
+
+          // Soporte base en el suelo
+          var baseGeo = new THREE.BoxGeometry(0.85, 0.06, 0.15);
+          var baseMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
+          var baseMesh = new THREE.Mesh(baseGeo, baseMat);
+          baseMesh.position.set(0, 0.03, 0);
+          this.el.object3D.add(baseMesh);
+
+          // Inicia tumbado en el suelo
+          targetPivot.rotation.x = -Math.PI / 2;
+          this.currentAngle = -Math.PI / 2;
+          this.targetAngle = -Math.PI / 2;
+        },
+        tick: function (time, delta) {
+          if (!this.player) return;
+          var dt = (delta || 16.6) / 1000;
+
+          if (!this.isHit && !this.isPopped) {
+            var pPos = this.player.object3D.position;
+            var tPos = new THREE.Vector3();
+            this.el.object3D.getWorldPosition(tPos);
+
+            var dx = pPos.x - tPos.x;
+            var dz = pPos.z - tPos.z;
+            var distSq = dx * dx + dz * dz;
+
+            if (distSq < this.data.triggerDist * this.data.triggerDist) {
+              this.pop();
+            }
+          }
+
+          // Animación de rotación fluida
+          if (Math.abs(this.currentAngle - this.targetAngle) > 0.02) {
+            this.currentAngle += (this.targetAngle - this.currentAngle) * Math.min(1.0, dt * 14);
+            this.targetPivot.rotation.x = this.currentAngle;
+          }
+        },
+        pop: function () {
+          if (this.isPopped || this.isHit) return;
+          this.isPopped = true;
+          this.targetAngle = 0;
+          if (window.AudioFX) window.AudioFX.playPopUp();
+        },
+        hit: function (point, normal) {
+          if (this.isHit) return;
+          this.isHit = true;
+          this.targetAngle = -Math.PI / 2; // Cae al suelo abatido
+
+          if (window.AudioFX) window.AudioFX.playTargetHit();
+
+          if (window.onTargetEliminated) {
+            window.onTargetEliminated();
+          }
+        },
+        resetTarget: function () {
+          this.isPopped = false;
+          this.isHit = false;
+          this.currentAngle = -Math.PI / 2;
+          this.targetAngle = -Math.PI / 2;
+          if (this.targetPivot) this.targetPivot.rotation.x = -Math.PI / 2;
+        }
+      });
+
+      // GESTOR DE MISIÓN CQB Y CONTADOR DE BLANCOS
+      AFRAME.registerComponent('tactical-mission', {
+        schema: {
+          totalTargets: { default: 50 }
+        },
+        init: function () {
+          window.remainingTargets = this.data.totalTargets;
+          this.elapsedSeconds = 0;
+          this.timerStarted = false;
+          this.timerInterval = null;
+
+          this.hudTimer = document.getElementById('hud-timer');
+          this.hudCount = document.getElementById('target-count');
+          this.vrTimer = document.getElementById('vr-hud-timer');
+          this.vrCount = document.getElementById('vr-hud-targets');
+
+          this.updateHUD();
+
+          var self = this;
+          window.onTargetEliminated = function () {
+            window.remainingTargets--;
+            if (window.remainingTargets < 0) window.remainingTargets = 0;
+            self.updateHUD();
+
+            if (window.remainingTargets === 0) {
+              if (self.timerInterval) clearInterval(self.timerInterval);
+              if (self.hudTimer) self.hudTimer.style.color = '#00ff88';
+              if (self.vrTimer) self.vrTimer.setAttribute('color', '#00ff88');
+              console.log('[MISIÓN] ¡Todos los blancos CQB abatidos en ' + self.formatTime(self.elapsedSeconds) + '!');
+            }
+          };
+
+          window.resetTacticalMission = function () {
+            window.remainingTargets = self.data.totalTargets;
+            self.elapsedSeconds = 0;
+            if (self.hudTimer) self.hudTimer.style.color = '#ffffff';
+            if (self.vrTimer) self.vrTimer.setAttribute('color', '#ffffff');
+            self.updateHUD();
+            document.querySelectorAll('.cqb-target').forEach(function (el) {
+              if (el.components && el.components['cqb-target']) {
+                el.components['cqb-target'].resetTarget();
+              }
+            });
+            if (!self.timerInterval) {
+              self.timerInterval = setInterval(() => {
+                if (window.gamePaused) return;
+                self.elapsedSeconds++;
+                self.updateTimerDisplay();
+              }, 1000);
+            }
+          };
+
+          var startTimerOnce = () => {
+            if (this.timerStarted) return;
+            this.timerStarted = true;
+            this.timerInterval = setInterval(() => {
+              if (window.gamePaused) return;
+              self.elapsedSeconds++;
+              self.updateTimerDisplay();
+            }, 1000);
+            window.removeEventListener('keydown', startTimerOnce);
+            window.removeEventListener('touchstart', startTimerOnce);
+          };
+
+          window.addEventListener('keydown', startTimerOnce, { once: true });
+          window.addEventListener('touchstart', startTimerOnce, { once: true });
+          setTimeout(startTimerOnce, 2500);
+        },
+        formatTime: function (totalSec) {
+          var m = Math.floor(totalSec / 60);
+          var s = totalSec % 60;
+          return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        },
+        updateTimerDisplay: function () {
+          var timeStr = this.formatTime(this.elapsedSeconds);
+          if (this.hudTimer) this.hudTimer.textContent = timeStr;
+          if (this.vrTimer) this.vrTimer.setAttribute('value', timeStr);
+        },
+        updateHUD: function () {
+          var countStr = window.remainingTargets.toString();
+          if (this.hudCount) this.hudCount.textContent = countStr;
+          if (this.vrCount) this.vrCount.setAttribute('value', '🎯 ' + countStr);
+          this.updateTimerDisplay();
         }
       });
 
@@ -238,6 +611,8 @@
       schema: { maxLives: { default: 3 } },
       init: function () {
         this.lives = this.data.maxLives;
+        this.isDead = false;
+        this.isInvulnerable = false;
         this.damageOverlay = document.getElementById('damage-overlay');
         this.gameOverScreen = document.getElementById('game-over-screen');
         this.lifeDots = [
@@ -248,7 +623,7 @@
         this.el.sceneEl.addEventListener('player-hit', () => this.takeDamage());
       },
       takeDamage: function () {
-        if (this.lives <= 0) return;
+        if (this.isDead || this.lives <= 0 || this.isInvulnerable) return;
         this.lives--;
 
         this.damageOverlay.style.opacity = '0.5';
@@ -260,30 +635,30 @@
 
         if (this.lives <= 0) this.gameOver();
       },
-        gameOver: function () {
-          // Forzar salida de VR para poder tocar los botones de la UI en 2D
-          if (this.el.sceneEl.is('vr-mode')) {
-            this.el.sceneEl.exitVR();
-          }
-          this.gameOverScreen.style.display = 'flex';
+      gameOver: function () {
+        this.isDead = true;
+        if (this.gameOverScreen) this.gameOverScreen.style.display = 'flex';
         let deathText = document.getElementById('vr-death-text');
         if (deathText) deathText.setAttribute('visible', 'true');
         
-        let rig = document.getElementById('rig');
-        if (rig) rig.removeAttribute('gamepad-fps');
         let manager = document.querySelector('[npc-manager]');
         if (manager) manager.components['npc-manager'].clearAll();
+
+        var pasos = document.getElementById('sonido-pasos');
+        if (pasos) pasos.pause();
       },
       respawn: function () {
         this.lives = this.data.maxLives;
+        this.isDead = false;
+        this.isInvulnerable = true;
+        setTimeout(() => { this.isInvulnerable = false; }, 2000); // 2 segundos de inmunidad de cortesía
+
         this.lifeDots.forEach(dot => dot.classList.remove('lost'));
-        this.gameOverScreen.style.display = 'none';
+        if (this.gameOverScreen) this.gameOverScreen.style.display = 'none';
         
         let deathText = document.getElementById('vr-death-text');
         if (deathText) deathText.setAttribute('visible', 'false');
 
-        let rig = document.getElementById('rig');
-        if (rig) rig.setAttribute('gamepad-fps', '');
         let manager = document.querySelector('[npc-manager]');
         if (manager) manager.components['npc-manager'].spawnWave();
       }
@@ -295,6 +670,67 @@
         rig.components['player-health'].respawn();
       }
     };
+
+    window.restartGame = function () {
+      let rig = document.getElementById('rig');
+      if (rig) {
+        if (rig.components['player-health']) {
+          rig.components['player-health'].respawn();
+        }
+        // Teletransportar a posición inicial
+        rig.setAttribute('position', '-17 -3.08 8');
+        if (rig.object3D) rig.object3D.position.set(-17, -3.08, 8);
+        if (rig.body) {
+          rig.body.position.set(-17, -3.08, 8);
+          rig.body.velocity.set(0, 0, 0);
+        }
+        // Reset rotación de cámara
+        var camYaw = document.getElementById('camera-yaw');
+        if (camYaw) camYaw.object3D.rotation.y = 0;
+        var camPitch = document.getElementById('camera-pitch');
+        if (camPitch) camPitch.object3D.rotation.x = 0;
+
+        // Reset munición
+        if (rig.components['weapon-system']) {
+          rig.components['weapon-system'].ammo = rig.components['weapon-system'].data.maxAmmo;
+          rig.components['weapon-system'].updateHUD();
+        }
+      }
+
+      // Reset de blancos tácticos y timer
+      if (window.resetTacticalMission) {
+        window.resetTacticalMission();
+      }
+
+      // Reset de oleadas y bajas enemigas
+      let manager = document.querySelector('[npc-manager]');
+      if (manager && manager.components['npc-manager']) {
+        manager.components['npc-manager'].totalKilled = 0;
+        manager.components['npc-manager'].clearAll();
+        manager.components['npc-manager'].spawnWave();
+      }
+
+      // Quitar pausa si estaba activo
+      window.gamePaused = false;
+      var vrPause = document.getElementById('vr-pause-hud');
+      if (vrPause) vrPause.setAttribute('visible', 'false');
+      var pause2D = document.getElementById('pause-overlay');
+      if (pause2D) pause2D.style.display = 'none';
+    };
+
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        if (window.toggleGamePause) window.toggleGamePause();
+      }
+      let healthComp = document.getElementById('rig') ? document.getElementById('rig').components['player-health'] : null;
+      if (healthComp && (healthComp.isDead || healthComp.lives <= 0)) {
+        if (e.key === 'b' || e.key === 'B') {
+          if (window.respawnPlayer) window.respawnPlayer();
+        } else if (e.key === 'a' || e.key === 'A') {
+          if (window.restartGame) window.restartGame();
+        }
+      }
+    });
 
     // Rastreo de carga de assets
     window.addEventListener('DOMContentLoaded', function () {
@@ -360,6 +796,23 @@
       });
     })();
 
+    // Alternar entre 1ª Persona (FPS limpio) y 3ª Persona (sobre el hombro)
+    window.isFirstPerson = false; // Por defecto: 3ra persona perfecta (como en imagen 2)
+    window.togglePerspective = function () {
+      window.isFirstPerson = !window.isFirstPerson;
+      var avatar = document.getElementById('avatar-container');
+      var offset = document.getElementById('camera-offset');
+      if (window.isFirstPerson) {
+        if (avatar) avatar.setAttribute('visible', 'false');
+        if (offset) offset.setAttribute('position', '0 0 0');
+        console.log('[CAM] Perspectiva: 1ª Persona (FPS limpio)');
+      } else {
+        if (avatar) avatar.setAttribute('visible', 'true');
+        if (offset) offset.setAttribute('position', '0.45 -0.2 1.6');
+        console.log('[CAM] Perspectiva: 3ª Persona (Sobre el hombro)');
+      }
+    };
+
     function copyLogs() {
       var text = window.gameLogs.join('\n');
       if (!text) text = "La consola está vacía.";
@@ -377,6 +830,47 @@
       } else {
         fallbackCopyTextToClipboard(text);
       }
+    }
+
+    function sendAndCopyLogs() {
+      var btn = document.getElementById('log-button');
+      if (btn) {
+        btn.style.transform = 'scale(0.85)';
+        btn.style.background = 'rgba(56, 189, 248, 0.4)';
+        setTimeout(() => { btn.style.transform = 'scale(1)'; }, 150);
+      }
+
+      copyLogs();
+
+      var logsToSend = (window.gameLogs && window.gameLogs.length > 0) ? window.gameLogs : ['[INFO] Sin eventos registrados todavía.'];
+      var payload = {
+        logs: logsToSend,
+        timestamp: Date.now()
+      };
+      var jsonStr = JSON.stringify(payload);
+
+      // 1. Envío nativo Java por socket/HTTP directo
+      if (window.AndroidGamepad && typeof window.AndroidGamepad.sendLogToPc === 'function') {
+        window.AndroidGamepad.sendLogToPc(jsonStr);
+      }
+
+      // 2. Envío secundario fetch
+      fetch('http://192.168.1.103:8080/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: jsonStr
+      }).then(function (res) {
+        if (res.ok && btn) {
+          btn.style.background = 'rgba(16, 185, 129, 0.5)';
+          setTimeout(function () {
+            btn.style.background = 'rgba(255, 255, 255, 0.15)';
+          }, 2000);
+        }
+      }).catch(function (err) {
+        if (btn) {
+          btn.style.background = 'rgba(255, 255, 255, 0.15)';
+        }
+      });
     }
 
     function fallbackCopyTextToClipboard(text) {
@@ -405,11 +899,52 @@
 
     function flashLogButton() {
       var btn = document.getElementById('log-button');
-      if (btn) {
+      if (btn && !btn.innerText.includes('Enviado')) {
         btn.style.background = "white";
-        setTimeout(function () { btn.style.background = "red"; }, 1000);
+        setTimeout(function () { btn.style.background = "rgba(220, 38, 38, 0.85)"; }, 800);
       }
     }
+
+    window.gamePaused = false;
+    window.toggleGamePause = function () {
+      let rig = document.getElementById('rig');
+      let healthComp = rig ? rig.components['player-health'] : null;
+      if (healthComp && (healthComp.isDead || healthComp.lives <= 0)) return; // No pausar si está muerto
+
+      window.gamePaused = !window.gamePaused;
+
+      // 1. Mostrar/Ocultar Carteles de Pausa
+      var vrPause = document.getElementById('vr-pause-hud');
+      if (vrPause) vrPause.setAttribute('visible', window.gamePaused ? 'true' : 'false');
+      var pause2D = document.getElementById('pause-overlay');
+      if (pause2D) pause2D.style.display = window.gamePaused ? 'flex' : 'none';
+
+      // 2. Detener disparos continuos si estaba disparando
+      if (rig && rig.components['weapon-system']) {
+        rig.components['weapon-system'].stopFire();
+      }
+
+      // 3. Pausar o reanudar animaciones del avatar
+      var ts = window.gamePaused ? 0 : 1;
+      var models = ['model-idle', 'model-walk', 'model-back', 'model-run', 'model-prone', 'model-jump', 'model-fire'];
+      models.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el && (el.getAttribute('visible') === true || el.getAttribute('visible') === 'true')) {
+          el.setAttribute('animation-mixer', 'timeScale: ' + ts);
+        }
+      });
+
+      // 4. Pausar o reanudar animaciones de los NPCs
+      document.querySelectorAll('.npc-enemy').forEach(function (npc) {
+        npc.querySelectorAll('[animation-mixer]').forEach(function (m) {
+          m.setAttribute('animation-mixer', 'timeScale: ' + ts);
+        });
+      });
+
+      // 5. Silenciar pasos si estaba caminando
+      var pasos = document.getElementById('sonido-pasos');
+      if (pasos && window.gamePaused) pasos.pause();
+    };
 
     window.animPaused = false;
     function toggleAnimPause() {
@@ -430,6 +965,12 @@
 
     window.nativeRightX = 0;
     window.nativeRightY = 0;
+    if (window.AndroidGamepad) {
+    // Si tu puente nativo tiene métodos para resetear, los llamamos aquí
+    // O simplemente aseguramos que el tick arranque limpio:
+    window.nativeRightX = 0;
+    window.nativeRightY = 0;
+    }
 
     // PUENTE NATIVO: Recibe la palanca derecha DIRECTAMENTE del sistema Android
     window.nativeGamepadAxes = function (z, rz, rx, ry) {
@@ -447,6 +988,61 @@
       window.nativeRightX = rightX;
       window.nativeRightY = rightY;
     };
+
+    // COMPONENTE: Skin Táctica Futurista (Negra con Amarilla / Cyber Exoskeleton)
+    AFRAME.registerComponent('avatar-skin', {
+      schema: {
+        src: { type: 'string', default: 'futuristic_armor_skin.webp' }
+      },
+      init: function () {
+        var self = this;
+        var loader = new THREE.TextureLoader();
+        this.texture = loader.load(this.data.src);
+        this.texture.flipY = false;
+        if (THREE.SRGBColorSpace) {
+          this.texture.colorSpace = THREE.SRGBColorSpace;
+        } else if (THREE.sRGBEncoding) {
+          this.texture.encoding = THREE.sRGBEncoding;
+        }
+
+        this.applySkin = function (rootEl) {
+          if (!rootEl) return;
+          var mesh = rootEl.getObject3D('mesh');
+          if (!mesh) return;
+          mesh.traverse(function (node) {
+            if (node.isMesh && node.material) {
+              var mats = Array.isArray(node.material) ? node.material : [node.material];
+              mats.forEach(function (mat) {
+                // Solo aplicar a la armadura humana Ch36, sin tocar el fusil M4
+                if (!mat.name || mat.name.toLowerCase().includes('ch36') || !mat.name.toLowerCase().includes('m4')) {
+                  mat.map = self.texture;
+                  mat.roughness = 0.55;
+                  mat.metalness = 0.40;
+                  mat.needsUpdate = true;
+                }
+              });
+            }
+          });
+        };
+
+        var modelIds = ['model-idle', 'model-walk', 'model-back', 'model-run', 'model-prone', 'model-jump', 'model-fire'];
+        modelIds.forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) {
+            self.applySkin(el);
+            el.addEventListener('model-loaded', function (evt) {
+              if (evt.target === el) {
+                self.applySkin(el);
+              }
+            });
+          }
+        });
+
+        this.el.addEventListener('model-loaded', function (evt) {
+          self.applySkin(evt.target);
+        });
+      }
+    });
 
     AFRAME.registerComponent('tint-npc', {
       schema: { darkness: { type: 'number', default: 1.0 } },
@@ -506,7 +1102,7 @@
           npc.setAttribute('class', 'npc-enemy');
           npc.setAttribute('npc-ai', '');
           // Usar físicas reales con esfera idéntica a la del jugador para garantizar inicialización
-          npc.setAttribute('dynamic-body', 'shape: sphere; sphereRadius: 0.45; mass: 65; linearDamping: 0.0');
+          npc.setAttribute('dynamic-body', 'shape: sphere; sphereRadius: 0.35; mass: 65; linearDamping: 0.0');
           npc.setAttribute('rotation-lock', '');
           npc.setAttribute('sound', 'src: #sonido-disparo; poolSize: 3; volume: 0.6');
 
@@ -631,7 +1227,7 @@
         }
       },
       tick: function (time) {
-        if (this.state === 'die' || !this.player) return;
+        if (window.gamePaused || this.state === 'die' || !this.player) return;
 
         let pPos = this.player.object3D.position;
         let mPos = this.el.object3D.position;
@@ -820,7 +1416,8 @@
             if (p) el = p.el;
           }
 
-          var isHitbox = el && (el.classList.contains('npc-body') || el.classList.contains('npc-head'));
+          var isTarget = el && (el.classList.contains('cqb-target') || (el.closest && el.closest('.cqb-target')));
+          var isHitbox = el && (el.classList.contains('npc-body') || el.classList.contains('npc-head') || isTarget);
           var isAvatar = el && el.id === 'avatar-container';
 
           if ((obj.visible || isHitbox) && obj.type === "Mesh" && !obj.name.includes('Line') && !isAvatar) {
@@ -867,6 +1464,38 @@
       },
 
       createImpact: function (point, normal, object, el) {
+        var isTarget = el && (el.classList.contains('cqb-target') || (el.closest && el.closest('.cqb-target')));
+        if (isTarget) {
+          var targetEl = el.classList.contains('cqb-target') ? el : el.closest('.cqb-target');
+          if (targetEl && targetEl.components && targetEl.components['cqb-target']) {
+            targetEl.components['cqb-target'].hit(point, normal);
+          }
+          var woodGeo = new THREE.BoxGeometry(0.04, 0.04, 0.04);
+          var woodMat = new THREE.MeshBasicMaterial({ color: 0xd2b48c });
+          for (var i = 0; i < 3; i++) {
+            var splinter = new THREE.Mesh(woodGeo, woodMat);
+            splinter.position.copy(point);
+            splinter.userData.velocity = new THREE.Vector3(
+              normal.x + (Math.random() - 0.5),
+              normal.y + Math.random(),
+              normal.z + (Math.random() - 0.5)
+            ).normalize().multiplyScalar(0.06);
+            this.el.sceneEl.object3D.add(splinter);
+
+            let s = splinter;
+            let st = 0;
+            let timer = setInterval(() => {
+              st += 0.016;
+              s.position.add(s.userData.velocity);
+              if (st > 0.25) {
+                clearInterval(timer);
+                if (s.parent) s.parent.remove(s);
+              }
+            }, 16);
+          }
+          return;
+        }
+
         var isNPC = el && (el.classList.contains('npc-body') || el.classList.contains('npc-head'));
 
         if (isNPC) {
@@ -966,27 +1595,60 @@
           }
         }
 
-        // --- LÓGICA DE MUERTE Y RESPAWN EN VR ---
+        // --- LÓGICA DE MUERTE Y ELECCIÓN EN VR (B = Continuar, A = Nueva Partida) ---
         let healthComp = this.el.components['player-health'];
-        if (healthComp && healthComp.lives <= 0) {
-          // Y = Continuar
+        if (healthComp && (healthComp.isDead || healthComp.lives <= 0)) {
+          // B = Continuar
           var continuePressed = false;
-          if (window.AndroidGamepad) continuePressed = window.AndroidGamepad.getBtnY();
-          if (!continuePressed && gp && gp.buttons[3]) continuePressed = gp.buttons[3].pressed || gp.buttons[3].value > 0.5;
-          
-          // B = Empezar de Nuevo
-          var restartPressed = false;
-          if (window.AndroidGamepad) restartPressed = window.AndroidGamepad.getBtnB();
-          if (!restartPressed && gp && gp.buttons[1]) restartPressed = gp.buttons[1].pressed || gp.buttons[1].value > 0.5;
-          
-          if (continuePressed && window.respawnPlayer) {
-             window.respawnPlayer();
-          } else if (restartPressed) {
-             location.reload();
+          if (window.AndroidGamepad && window.AndroidGamepad.getBtnB) {
+            continuePressed = window.AndroidGamepad.getBtnB();
+          } else if (gp && gp.buttons[1]) {
+            continuePressed = gp.buttons[1].pressed || gp.buttons[1].value > 0.5;
           }
-          return; // No hacer nada más si está muerto
+          
+          // A = Nueva Partida
+          var restartPressed = false;
+          if (window.AndroidGamepad && window.AndroidGamepad.getBtnA) {
+            restartPressed = window.AndroidGamepad.getBtnA();
+          } else if (gp && gp.buttons[0]) {
+            restartPressed = gp.buttons[0].pressed || gp.buttons[0].value > 0.5;
+          }
+          
+          if (continuePressed && !this.lastDeadBPressed) {
+            if (window.respawnPlayer) window.respawnPlayer();
+          }
+          this.lastDeadBPressed = continuePressed;
+
+          if (restartPressed && !this.lastDeadAPressed) {
+            if (window.restartGame) window.restartGame();
+          }
+          this.lastDeadAPressed = restartPressed;
+
+          if (this.pasosAudio && !this.pasosAudio.paused) this.pasosAudio.pause();
+          return; // No procesar controles de juego mientras esté muerto
         }
-        // ----------------------------------------
+        this.lastDeadBPressed = false;
+        this.lastDeadAPressed = false;
+        // -----------------------------------------------------------------------------
+
+        // --- BOTÓN START = PAUSA / REANUDAR ---
+        var startPressed = false;
+        if (window.AndroidGamepad && window.AndroidGamepad.getBtnStart) {
+          startPressed = window.AndroidGamepad.getBtnStart();
+        } else if (gp && gp.buttons[9]) {
+          startPressed = gp.buttons[9].pressed || gp.buttons[9].value > 0.5;
+        }
+
+        if (startPressed && !this.lastStartPressed) {
+          if (window.toggleGamePause) window.toggleGamePause();
+        }
+        this.lastStartPressed = startPressed;
+
+        if (window.gamePaused) {
+          if (this.pasosAudio && !this.pasosAudio.paused) this.pasosAudio.pause();
+          return; // No procesar movimiento, rotación ni disparo en pausa
+        }
+        // --------------------------------------
 
         // Forzar música ambiental en el primer input del jugador (Web Audio Policy)
         if (!this.ambientStarted) {
@@ -1026,9 +1688,55 @@
 
 
 
+        // CAMBIO DE VISTA 1ª / 3ª PERSONA CON LA CRUZ DEL MANDO (D-PAD)
+        var dpadPressed = false;
+        if (window.AndroidGamepad) {
+          dpadPressed = window.AndroidGamepad.getDpadUp() || 
+                        window.AndroidGamepad.getDpadDown() || 
+                        window.AndroidGamepad.getDpadLeft() || 
+                        window.AndroidGamepad.getDpadRight();
+        } else if (gp) {
+          var b12 = gp.buttons[12] ? (gp.buttons[12].value > 0.6) : false;
+          var b13 = gp.buttons[13] ? (gp.buttons[13].value > 0.6) : false;
+          var b14 = gp.buttons[14] ? (gp.buttons[14].value > 0.6) : false;
+          var b15 = gp.buttons[15] ? (gp.buttons[15].value > 0.6) : false;
+          dpadPressed = b12 || b13 || b14 || b15;
+        }
+
+        if (dpadPressed) {
+          if (!this.dpadHeld) {
+            this.dpadHeld = true;
+            if (window.togglePerspective) window.togglePerspective();
+          }
+        } else {
+          this.dpadHeld = false;
+        }
+
+        // COPIAR Y ENVIAR LOGS CON BOTÓN SELECT DEL CONTROL
+        var selectPressed = false;
+        if (window.AndroidGamepad) {
+          selectPressed = window.AndroidGamepad.getBtnSelect();
+        } else if (gp) {
+          selectPressed = (gp.buttons[8] && (gp.buttons[8].pressed || gp.buttons[8].value > 0.5));
+        }
+
+        if (selectPressed) {
+          if (!this.selectHeld) {
+            this.selectHeld = true;
+            if (window.sendAndCopyLogs) {
+              window.sendAndCopyLogs();
+              if (window.addLog) window.addLog("[INPUT] Logs enviados a PC mediante botón SELECT");
+            }
+          }
+        } else {
+          this.selectHeld = false;
+        }
+
         // DISPARO CON R1 (Botón 5 comúnmente o Interfaz Nativa de Android)
-        var r1Pressed = window.AndroidGamepad ? window.AndroidGamepad.getR1() : false;
-        if (!r1Pressed && gp) {
+        var r1Pressed = false;
+        if (window.AndroidGamepad) {
+          r1Pressed = window.AndroidGamepad.getR1();
+        } else if (gp) {
           r1Pressed = (gp.buttons[5] && gp.buttons[5].pressed);
         }
 
@@ -1038,8 +1746,6 @@
           }
         } else {
           // No detenemos el fuego aquí para no interrumpir el mouse de PC.
-          // El stopFire para gamepad lo manejaremos si no hay r1Pressed y no hay mouse apretado.
-          // Para simplificar, si no hay mando no llamamos a stopFire aquí en cada frame.
           if ((gp || window.AndroidGamepad) && !r1Pressed) {
             if (this.el.components['weapon-system']) {
               this.el.components['weapon-system'].stopFire();
@@ -1047,16 +1753,20 @@
           }
         }
 
-        // Apuntar / Zoom con L1 (Físicamente Botón 7)
+        // Apuntar / Zoom exclusivamente con L2 (Gatillo Izquierdo)
+        // En Android, usamos EXCLUSIVAMENTE el puente nativo para que rotar la palanca derecha NUNCA altere el zoom
         var zoomPressed = false;
-        if (gp) {
-          zoomPressed = (gp.buttons[7] && (gp.buttons[7].pressed || gp.buttons[7].value > 0.65));
+        if (window.AndroidGamepad) {
+          zoomPressed = window.AndroidGamepad.getL2();
+        } else if (gp) {
+          // Solo para PC (donde no existe window.AndroidGamepad)
+          var b6Val = gp.buttons[6] ? (typeof gp.buttons[6].value === 'number' ? gp.buttons[6].value : 0) : 0;
+          zoomPressed = (b6Val > 0.75);
         }
 
         var camera = document.querySelector('a-camera');
         if (camera) {
-          var targetFov = zoomPressed ? 40 : 80; // FOV 40 cuando apuntas, 80 normal
-          // Intentar leer del componente camera primero, sino del atributo fov
+          var targetFov = zoomPressed ? 35 : 80; // FOV 35 cuando apuntas con L2, 80 vista amplia normal
           var currentFov = 80;
           if (camera.components && camera.components.camera) {
             currentFov = camera.components.camera.data.fov;
@@ -1065,9 +1775,9 @@
           }
 
           if (Math.abs(currentFov - targetFov) > 0.5) {
-            var newFov = currentFov + (targetFov - currentFov) * 0.15; // Interpolación suave
+            var newFov = currentFov + (targetFov - currentFov) * 0.2; // Interpolación suave y rápida
             camera.setAttribute('camera', 'fov', newFov);
-            camera.setAttribute('fov', newFov); // Fallback para otras lógicas
+            camera.setAttribute('fov', newFov); // Fallback
           }
         }
 
@@ -1099,7 +1809,7 @@
         }
 
         var dtFactor = (timeDelta || 16.666) / 16.666;
-        if (dtFactor > 6) dtFactor = 6; // Límite para evitar giros bruscos en lag spikes
+        if (dtFactor > 2) dtFactor = 2; // Límite para evitar giros bruscos en lag spikes
 
         if (window.inspectMode) {
           var avatar = document.getElementById('avatar-container');
@@ -1132,10 +1842,12 @@
 
           var moveSpeed = 3.5;
 
-          // Correr con R2 (Interfaz nativa o Botón 4)
-          var runPressed = window.AndroidGamepad ? window.AndroidGamepad.getR2() : false;
-          if (!runPressed && gp) {
-            runPressed = (gp.buttons[4] && gp.buttons[4].pressed);
+          // Correr con L1 (Interfaz nativa getL1() o Botón 4 en PC)
+          var runPressed = false;
+          if (window.AndroidGamepad) {
+            runPressed = window.AndroidGamepad.getL1();
+          } else if (gp) {
+            runPressed = (gp.buttons[4] && (gp.buttons[4].pressed || gp.buttons[4].value > 0.5));
           }
 
           // Si el jugador está apuntando con L2, no puede correr simultáneamente
@@ -1147,8 +1859,10 @@
 
           // Botón X (Square) para tumbarse (prone)
           // X = ramplear (Botón 2 nativo o web)
-          var btnXPressed = window.AndroidGamepad ? window.AndroidGamepad.getBtnX() : false;
-          if (!btnXPressed && gp) {
+          var btnXPressed = false;
+          if (window.AndroidGamepad) {
+            btnXPressed = window.AndroidGamepad.getBtnX();
+          } else if (gp) {
             btnXPressed = (gp.buttons[2] && gp.buttons[2].pressed);
           }
           if (btnXPressed) {
@@ -1172,7 +1886,10 @@
           }
 
           // Movimiento hacia la dirección de la mirada
-          var rotationY = yawWrapper ? yawWrapper.object3D.rotation.y : 0;
+          var cameraEl = document.querySelector('a-camera');
+          var internalCamRot = cameraEl ? cameraEl.object3D.rotation.y : 0;
+          var rotationY = yawWrapper ? (yawWrapper.object3D.rotation.y + internalCamRot) : 0;
+
 
           var velX = (ejeX * Math.cos(rotationY) + ejeY * Math.sin(rotationY)) * moveSpeed;
           var velZ = (-ejeX * Math.sin(rotationY) + ejeY * Math.cos(rotationY)) * moveSpeed;
@@ -1225,8 +1942,10 @@
         }
 
         // Saltar estrictamente con A (Botón 0)
-        var jumpPressed = window.AndroidGamepad ? window.AndroidGamepad.getBtnA() : false;
-        if (!jumpPressed && gp) {
+        var jumpPressed = false;
+        if (window.AndroidGamepad) {
+          jumpPressed = window.AndroidGamepad.getBtnA();
+        } else if (gp) {
           jumpPressed = (gp.buttons[0] && gp.buttons[0].pressed);
         }
 
@@ -1249,7 +1968,7 @@
           var activeBtns = [];
           if (gp) {
             for (var i = 0; i < gp.buttons.length; i++) {
-              if (gp.buttons[i] && gp.buttons[i].pressed) activeBtns.push(i + "(" + gp.buttons[i].value.toFixed(2) + ")");
+              if (gp.buttons[i] && gp.buttons[i].value > 0.6) activeBtns.push(i + "(" + gp.buttons[i].value.toFixed(2) + ")");
             }
           }
           var posLog = this.el.object3D ? this.el.object3D.position.y.toFixed(2) : 'N/A';
@@ -1595,7 +2314,7 @@
             }
 
             // Encender físicas y gravedad SIN NINGÚN RETRASO
-            rig.setAttribute('dynamic-body', 'shape: sphere; mass: 65; sphereRadius: 0.45; linearDamping: 0.0; angularDamping: 1.0');
+            rig.setAttribute('dynamic-body', 'shape: sphere; mass: 65; sphereRadius: 0.35; linearDamping: 0.0; angularDamping: 1.0');
           }
         });
       }
@@ -1604,16 +2323,21 @@
 </head>
 
 <body>
-  <!-- Botón de Logs Solicitado -->
-  <div id="log-overlay">
-    <button id="log-button" onclick="copyLogs()"></button>
+  <!-- HUD TÁCTICO MINIMALISTA (SEMISTRANSPARENTE, SIN RELLENO, SIN LETRAS) -->
+  <div id="hud-tactical">
+    <div id="hud-timer">00:00</div>
+    <div id="hud-targets"><span class="target-icon">🎯</span> <span id="target-count">50</span></div>
   </div>
 
   <div id="damage-overlay"></div>
   <div id="game-over-screen">
     <h1>ESTÁS MUERTO</h1>
-    <button class="go-btn" onclick="respawnPlayer()">Continuar</button>
-    <button class="go-btn" onclick="location.reload()">Nueva Partida</button>
+    <button class="go-btn" onclick="respawnPlayer()">[B] Continuar</button>
+    <button class="go-btn" style="background:#444; margin-top:10px;" onclick="restartGame()">[A] Nueva Partida</button>
+  </div>
+  <div id="pause-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center; flex-direction:column; font-family:sans-serif; color:#ffbb00; pointer-events:none;">
+    <h1 style="font-size:3rem; margin:0 0 10px 0; letter-spacing:4px;">PAUSA</h1>
+    <p style="font-size:1.4rem; color:#ffffff; margin:0;">[START] REANUDAR</p>
   </div>
 
   <div id="hud-lives">
@@ -1630,8 +2354,8 @@
 
   <button id="vr-btn" onclick="document.querySelector('a-scene').enterVR()"></button>
 
-  <a-scene physics="debug: false" webxr="optionalFeatures: hit-test" touch-look vr-mode-ui="enabled: false"
-    renderer="antialias: true; colorManagement: true;" show-fps npc-manager shader-warmup vr-camera-fix>
+  <a-scene physics="debug: false" webxr="optionalFeatures: hit-test" vr-mode-ui="enabled: false"
+    renderer="antialias: false; colorManagement: true;" show-fps npc-manager shader-warmup vr-camera-fix performance-scaler tactical-mission="totalTargets: 50">
     <a-assets>
       <a-asset-item id="edificio" src="low-poly_industrial_building.glb"></a-asset-item>
 
@@ -1656,6 +2380,8 @@
       <a-asset-item id="avatar-prone" src="ProneForward-webp.glb"></a-asset-item>
       <a-asset-item id="avatar-jump" src="JumpForward-webp.glb"></a-asset-item>
       <a-asset-item id="avatar-fire" src="FiringRifle-webp.glb"></a-asset-item>
+      <!-- Skin Táctica Futurista (Exoskeleton Negro y Amarillo) -->
+      <img id="avatar-futuristic-skin" src="futuristic_armor_skin.webp">
     </a-assets>
 
     <!-- Reproductor de Música Ambiental -->
@@ -1681,8 +2407,8 @@
       <!-- La cámara envuelta en dos entidades para controlar Pitch y Yaw independientemente de las físicas -->
       <a-entity id="camera-yaw" position="0 0 0">
         <!-- RENDERIZADO DEL AVATAR 3D -->
-        <!-- Ahora dentro de camera-yaw para que el cuerpo gire a los lados exactamente como la cámara -->
-        <a-entity id="avatar-container" position="0 -0.35 0" rotation="0 180 0">
+        <!-- Visible por defecto en 3ra persona sobre el hombro (la perfecta de imagen 2) -->
+        <a-entity id="avatar-container" position="0 -0.35 0" rotation="0 180 0" visible="true" avatar-skin>
           <a-entity id="model-idle" gltf-model="#avatar-idle" attach-weapon="src: #rifle-model"
             animation-mixer="clip: *; loop: repeat; timeScale: 1" visible="true"></a-entity>
           <a-entity id="model-walk" gltf-model="#avatar-walk" attach-weapon="src: #rifle-model"
@@ -1699,19 +2425,84 @@
             animation-mixer="clip: *; loop: repeat; timeScale: 0" visible="false"></a-entity>
         </a-entity>
         <a-entity id="camera-pitch" position="0 0 0">
-          <!-- CÁMARA PRIMERA PERSONA (VR) -->
-          <a-camera position="0.5 1.6 1.0" look-controls="enabled: true; magicWindowTrackingEnabled: false; pointerLockEnabled: false"
-            wasd-controls="enabled: false">
-            <!-- HUD: Retícula -->
-            <a-entity position="0 0 -1">
-              <a-entity geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.01"
-                material="color: red; shader: flat" position="0 0 0"></a-entity>
-            </a-entity>
-            <!-- CARTEL DE MUERTE VR -->
-            <a-text id="vr-death-text" value="ESTAS MUERTO\n\n[Y] CONTINUAR  --  [B] EMPEZAR DE NUEVO" position="0 0 -1.5" align="center" color="red" width="3.5" visible="false"></a-text>
-          </a-camera>
+          <a-entity id="camera-offset" position="0.45 -0.2 1.6">
+            <!-- CÁMARA HÍBRIDA (3ra Persona sobre el hombro por defecto, conmutable a 1ra con D-Pad) -->
+            <a-camera position="0 1.6 0" look-controls="enabled: false; magicWindowTrackingEnabled: false; pointerLockEnabled: false"
+              wasd-controls="enabled: false">
+              <!-- HUD: Retícula -->
+              <a-entity position="0 0 -1">
+                <a-entity geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.01"
+                  material="color: red; shader: flat" position="0 0 0"></a-entity>
+              </a-entity>
+              <!-- HUD TÁCTICO FLOTANTE PARA VISOR VR (SEMISTRANSPARENTE, SIN LETRAS) -->
+              <a-entity id="vr-hud-tactical" position="0 0.45 -1.1">
+                <a-text id="vr-hud-timer" value="00:00" align="right" position="-0.15 0 0" width="1.6" color="#ffffff" opacity="0.75"></a-text>
+                <a-text id="vr-hud-targets" value="🎯 50" align="left" position="0.15 0 0" width="1.6" color="#ff5555" opacity="0.85"></a-text>
+              </a-entity>
+              <!-- CARTEL DE PAUSA VR -->
+              <a-entity id="vr-pause-hud" position="0 0 -1.4" visible="false">
+                <a-text value="PAUSA\n\n[START] REANUDAR" align="center" color="#ffbb00" width="3.2"></a-text>
+              </a-entity>
+              <!-- CARTEL DE MUERTE VR -->
+              <a-text id="vr-death-text" value="ESTAS MUERTO\n\n[B] CONTINUAR  --  [A] NUEVA PARTIDA" position="0 0 -1.4" align="center" color="#ff2222" width="3.5" visible="false"></a-text>
+            </a-camera>
+          </a-entity>
         </a-entity>
       </a-entity>
+    </a-entity>
+
+    <!-- 50 BLANCOS TÁCTICOS SORPRESA (CQB KILLHOUSE) -->
+    <a-entity id="cqb-targets-container">
+      <a-entity class="cqb-target" cqb-target position="-19.5 -2.85 5.0" rotation="0 45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-21.0 -2.85 11.5" rotation="0 -45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-23.5 -2.85 7.5" rotation="0 90 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-22.0 -2.85 2.5" rotation="0 30 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-24.5 -2.85 13.5" rotation="0 -60 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-16.0 -2.85 17.0" rotation="0 -90 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-19.0 -2.85 21.5" rotation="0 -45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-22.5 -2.85 26.0" rotation="0 0 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-26.0 -2.85 22.0" rotation="0 45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-29.5 -2.85 27.5" rotation="0 -30 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-33.0 -2.85 24.0" rotation="0 60 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-36.0 -2.85 19.5" rotation="0 90 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-31.0 -2.85 16.5" rotation="0 120 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-27.0 -2.85 18.0" rotation="0 -75 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-16.5 -2.85 -2.0" rotation="0 60 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-18.5 -2.85 -6.5" rotation="0 0 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-22.0 -2.85 -8.0" rotation="0 45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-25.5 -2.85 -4.5" rotation="0 90 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-29.0 -2.85 -7.5" rotation="0 -45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-32.5 -2.85 -3.0" rotation="0 30 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-35.0 -2.85 -6.0" rotation="0 75 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-27.5 -2.85 0.5" rotation="0 110 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-33.5 -2.85 1.5" rotation="0 -60 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-26.5 -2.85 9.0" rotation="0 0 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-28.5 -2.85 5.5" rotation="0 45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-30.5 -2.85 12.0" rotation="0 -45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-33.0 -2.85 7.0" rotation="0 30 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-35.5 -2.85 10.5" rotation="0 -30 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-38.0 -2.85 5.0" rotation="0 60 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-40.0 -2.85 12.5" rotation="0 -60 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-42.0 -2.85 8.0" rotation="0 0 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-44.5 -2.85 4.0" rotation="0 75 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-46.0 -2.85 12.0" rotation="0 -75 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-48.5 -2.85 7.5" rotation="0 45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-50.5 -2.85 3.5" rotation="0 60 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-52.0 -2.85 11.5" rotation="0 -45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-54.5 -2.85 6.0" rotation="0 0 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-56.5 -2.85 13.5" rotation="0 -60 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-58.5 -2.85 4.5" rotation="0 30 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-60.5 -2.85 9.0" rotation="0 0 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-62.5 -2.85 5.5" rotation="0 45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-64.5 -2.85 11.0" rotation="0 -45 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-13.5 -2.85 7.0" rotation="0 180 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-11.0 -2.85 12.0" rotation="0 -135 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-8.5 -2.85 5.0" rotation="0 135 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-6.0 -2.85 10.0" rotation="0 180 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-3.5 -2.85 15.0" rotation="0 -120 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-5.0 -2.85 20.0" rotation="0 -90 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-8.0 -2.85 1.0" rotation="0 90 0"></a-entity>
+      <a-entity class="cqb-target" cqb-target position="-12.0 -2.85 -4.0" rotation="0 45 0"></a-entity>
     </a-entity>
   </a-scene>
 </body>

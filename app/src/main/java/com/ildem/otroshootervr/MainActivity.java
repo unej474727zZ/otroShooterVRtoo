@@ -24,10 +24,22 @@ public class MainActivity extends Activity {
         public boolean r2Pressed = false;
         public boolean r2AxisPressed = false;
         public boolean l1Pressed = false;
+        public boolean l2Pressed = false;
+        public boolean l2AxisPressed = false;
         public boolean btnAPressed = false;
         public boolean btnXPressed = false;
+        public boolean btnYPressed = false;
+        public boolean btnBPressed = false;
+        public boolean btnSelectPressed = false;
+        public boolean btnStartPressed = false;
         public boolean dpadUp = false;
         public boolean dpadDown = false;
+        public boolean dpadLeft = false;
+        public boolean dpadRight = false;
+        public boolean dpadHatUp = false;
+        public boolean dpadHatDown = false;
+        public boolean dpadHatLeft = false;
+        public boolean dpadHatRight = false;
 
         @JavascriptInterface
         public float getRightX() {
@@ -55,6 +67,11 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public boolean getL2() {
+            return l2Pressed || l2AxisPressed;
+        }
+
+        @JavascriptInterface
         public boolean getBtnA() {
             return btnAPressed;
         }
@@ -65,13 +82,66 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public boolean getBtnY() {
+            return btnYPressed;
+        }
+
+        @JavascriptInterface
+        public boolean getBtnB() {
+            return btnBPressed;
+        }
+
+        @JavascriptInterface
+        public boolean getBtnSelect() {
+            return btnSelectPressed;
+        }
+
+        @JavascriptInterface
+        public boolean getBtnStart() {
+            return btnStartPressed;
+        }
+
+        @JavascriptInterface
         public boolean getDpadUp() {
-            return dpadUp;
+            return dpadUp || dpadHatUp;
         }
 
         @JavascriptInterface
         public boolean getDpadDown() {
-            return dpadDown;
+            return dpadDown || dpadHatDown;
+        }
+
+        @JavascriptInterface
+        public boolean getDpadLeft() {
+            return dpadLeft || dpadHatLeft;
+        }
+
+        @JavascriptInterface
+        public boolean getDpadRight() {
+            return dpadRight || dpadHatRight;
+        }
+
+        @JavascriptInterface
+        public void sendLogToPc(String jsonLogs) {
+            new Thread(() -> {
+                try {
+                    java.net.URL url = new java.net.URL("http://192.168.1.103:8080/log");
+                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                    conn.setDoOutput(true);
+                    conn.setConnectTimeout(3000);
+                    conn.setReadTimeout(3000);
+                    try (java.io.OutputStream os = conn.getOutputStream()) {
+                        byte[] input = jsonLogs.getBytes("utf-8");
+                        os.write(input, 0, input.length);
+                    }
+                    int code = conn.getResponseCode();
+                    android.util.Log.d("VR_LOG", "Log enviado a PC con codigo: " + code);
+                } catch (Exception e) {
+                    android.util.Log.e("VR_LOG", "Error enviando log a PC", e);
+                }
+            }).start();
         }
     }
 
@@ -157,7 +227,7 @@ public class MainActivity extends Activity {
                 gamepadInterface.r2Pressed = isDown;
                 return true;
             case KeyEvent.KEYCODE_BUTTON_L2:
-                gamepadInterface.r2Pressed = isDown; // Mapear L2 también a correr por si están invertidos
+                gamepadInterface.l2Pressed = isDown;
                 return true;
             case KeyEvent.KEYCODE_BUTTON_L1:
                 gamepadInterface.l1Pressed = isDown;
@@ -169,16 +239,38 @@ public class MainActivity extends Activity {
                 gamepadInterface.btnXPressed = isDown;
                 return true;
             case KeyEvent.KEYCODE_BUTTON_Y:
-                // Ignorado o asignado a otra cosa a futuro
-                return super.dispatchKeyEvent(event);
+                gamepadInterface.btnYPressed = isDown;
+                return true;
             case KeyEvent.KEYCODE_BUTTON_B:
-                // Ignorado o asignado a otra cosa a futuro
-                return super.dispatchKeyEvent(event);
+                gamepadInterface.btnBPressed = isDown;
+                return true;
+            case KeyEvent.KEYCODE_BUTTON_SELECT:
+                gamepadInterface.btnSelectPressed = isDown;
+                return true;
+            case KeyEvent.KEYCODE_BUTTON_START:
+            case KeyEvent.KEYCODE_MENU:
+            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                gamepadInterface.btnStartPressed = isDown;
+                return true;
+            case KeyEvent.KEYCODE_BACK:
+                // Si viene del mando (muchos mandos chinos envían BACK en vez de SELECT)
+                if ((event.getSource() & android.view.InputDevice.SOURCE_GAMEPAD) == android.view.InputDevice.SOURCE_GAMEPAD
+                        || (event.getSource() & android.view.InputDevice.SOURCE_JOYSTICK) == android.view.InputDevice.SOURCE_JOYSTICK) {
+                    gamepadInterface.btnSelectPressed = isDown;
+                    return true;
+                }
+                break;
             case KeyEvent.KEYCODE_DPAD_UP:
                 gamepadInterface.dpadUp = isDown;
                 return true;
             case KeyEvent.KEYCODE_DPAD_DOWN:
                 gamepadInterface.dpadDown = isDown;
+                return true;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                gamepadInterface.dpadLeft = isDown;
+                return true;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                gamepadInterface.dpadRight = isDown;
                 return true;
         }
 
@@ -214,10 +306,41 @@ public class MainActivity extends Activity {
             gamepadInterface.rightX = rightX;
             gamepadInterface.rightY = rightY;
 
-            // Leer gatillo derecho R2 como eje con umbral de 0.6f porque el mando descansa en 0.5f
+            // Leer D-Pad / Cruz analógica (HAT X / HAT Y)
+            float hatX = event.getAxisValue(android.view.MotionEvent.AXIS_HAT_X);
+            float hatY = event.getAxisValue(android.view.MotionEvent.AXIS_HAT_Y);
+            gamepadInterface.dpadHatUp = (hatY < -0.5f);
+            gamepadInterface.dpadHatDown = (hatY > 0.5f);
+            gamepadInterface.dpadHatLeft = (hatX < -0.5f);
+            gamepadInterface.dpadHatRight = (hatX > 0.5f);
+
+            // GATILLOS ANALÓGICOS:
+            // OJO: En mandos Bluetooth, al girar la palanca a la derecha (axisZ > 0), Android también reporta AXIS_BRAKE.
+            // Al girar la palanca abajo (axisRZ > 0), Android también reporta AXIS_GAS.
+            // Para que NO se confunda girar la cámara con presionar L2 o R2:
+            // 1) Si se mueve la palanca derecha, ignoramos AXIS_BRAKE y AXIS_GAS.
+            // 2) Solo si la palanca derecha está en reposo aceptamos AXIS_BRAKE como L2 o AXIS_GAS como R2.
+            boolean isRightStickDeflected = (Math.abs(rightX) > 0.15f || Math.abs(rightY) > 0.15f);
+
+            float axisLTrigger = event.getAxisValue(android.view.MotionEvent.AXIS_LTRIGGER);
+            float axisBrake = event.getAxisValue(android.view.MotionEvent.AXIS_BRAKE);
+            if (axisLTrigger > 0.75f) {
+                gamepadInterface.l2AxisPressed = true;
+            } else if (!isRightStickDeflected && axisBrake > 0.75f) {
+                gamepadInterface.l2AxisPressed = true;
+            } else if (axisLTrigger < 0.3f && axisBrake < 0.3f) {
+                gamepadInterface.l2AxisPressed = false;
+            }
+
             float axisRTrigger = event.getAxisValue(android.view.MotionEvent.AXIS_RTRIGGER);
             float axisGas = event.getAxisValue(android.view.MotionEvent.AXIS_GAS);
-            gamepadInterface.r2AxisPressed = (axisRTrigger > 0.6f || axisGas > 0.6f);
+            if (axisRTrigger > 0.75f) {
+                gamepadInterface.r2AxisPressed = true;
+            } else if (!isRightStickDeflected && axisGas > 0.75f) {
+                gamepadInterface.r2AxisPressed = true;
+            } else if (axisRTrigger < 0.3f && axisGas < 0.3f) {
+                gamepadInterface.r2AxisPressed = false;
+            }
         }
         return super.dispatchGenericMotionEvent(event);
     }
