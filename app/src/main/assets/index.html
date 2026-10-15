@@ -259,28 +259,38 @@
       }
     });
 
-      // Reparar desajuste de cámara al entrar a VR (Cambio automático Primera/Tercera persona)
+      // Reparar desajuste de cámara al entrar a VR y sincronizar perspectiva
       AFRAME.registerComponent('vr-camera-fix', {
         init: function () {
           var scene = this.el;
           scene.addEventListener('enter-vr', function () {
             var avatar = document.getElementById('avatar-container');
-            if (avatar) avatar.setAttribute('visible', 'false'); // Ocultar cuerpo físico en VR
             var offset = document.getElementById('camera-offset');
-            if (offset) offset.setAttribute('position', '0 0 0'); // Primera persona en VR para no atravesar paredes
-            var pitchWrapper = document.getElementById('camera-pitch');
-            if (pitchWrapper) pitchWrapper.object3D.rotation.set(0, 0, 0); // Horizonte nivelado a cero
-          });
-          scene.addEventListener('exit-vr', function () {
             if (window.isFirstPerson) {
-              var avatar = document.getElementById('avatar-container');
               if (avatar) avatar.setAttribute('visible', 'false');
-              var offset = document.getElementById('camera-offset');
               if (offset) offset.setAttribute('position', '0 0 0');
             } else {
-              var avatar = document.getElementById('avatar-container');
               if (avatar) avatar.setAttribute('visible', 'true');
-              var offset = document.getElementById('camera-offset');
+              if (offset) offset.setAttribute('position', '0.45 -0.2 1.7');
+            }
+            var pitchWrapper = document.getElementById('camera-pitch');
+            if (pitchWrapper) pitchWrapper.object3D.rotation.set(0, 0, 0); // Horizonte nivelado a cero
+
+            // Actualizar dimensiones inmediatamente al entrar a VR
+            setTimeout(function () {
+              if (scene.renderer) {
+                scene.renderer.setSize(window.innerWidth, window.innerHeight, false);
+              }
+            }, 100);
+          });
+          scene.addEventListener('exit-vr', function () {
+            var avatar = document.getElementById('avatar-container');
+            var offset = document.getElementById('camera-offset');
+            if (window.isFirstPerson) {
+              if (avatar) avatar.setAttribute('visible', 'false');
+              if (offset) offset.setAttribute('position', '0 0 0');
+            } else {
+              if (avatar) avatar.setAttribute('visible', 'true');
               if (offset) offset.setAttribute('position', '0.45 -0.2 1.6');
             }
           });
@@ -307,7 +317,8 @@
         }
       });
 
-      // CALIBRADOR ÓPTICO VR (CONVERGENCIA Y ZOOM ESTEREOSCÓPICO L2 EN VIVO)
+      // CALIBRADOR ÓPTICO VR Y CORRECCIÓN DE RELACIÓN DE ASPECTO 1:1
+      // Corrige el estiramiento horizontal ('todo gordo') y el falso zoom 'demasiado cerca'
       AFRAME.registerComponent('vr-optical-calibrator', {
         init: function () {
           var sceneEl = this.el;
@@ -327,29 +338,31 @@
                 var camL = cameraVR.cameras[0];
                 var camR = cameraVR.cameras[1];
 
-                // 1. Calibración óptica de convergencia (juntar o separar las dos imágenes de los ojos)
+                // 1. CORRECCIÓN MATEMÁTICA DE ASPECTO 1:1 Y FOV NATURAL EN VR
+                // En teléfonos panorámicos (19:9 / 20:9), Cardboard calcula mal el aspecto por ojo y estira la imagen 50%
+                var w = window.innerWidth || 1280;
+                var h = window.innerHeight || 576;
+                var eyeAspect = (w * 0.5) / h; // Relación de aspecto real por ojo
+
+                // FOV 80 grados idéntico al modo 2D (elimina la sensación de zoom forzado o estar 'muy cerca')
+                var baseFov = 80;
+                var zoomFactor = window.isZoomingVR ? 1.75 : 1.0;
+                var targetP11 = (1.0 / Math.tan((baseFov * Math.PI / 180) / 2)) * zoomFactor;
+                var targetP00 = targetP11 / eyeAspect;
+
+                // Aplicar matriz de proyección simétrica y sin deformaciones
+                camL.projectionMatrix.elements[0] = targetP00;
+                camL.projectionMatrix.elements[5] = targetP11;
+                camR.projectionMatrix.elements[0] = targetP00;
+                camR.projectionMatrix.elements[5] = targetP11;
+
+                // 2. Calibración óptica de convergencia / Distancia interpupilar (D-Pad Izquierda / Derecha)
                 var offset = window.vrLensOffset || 0.0;
-                if (offset !== 0) {
-                  // elements[8] es el desplazamiento horizontal del centro óptico P(0,2) en Three.js
-                  camL.projectionMatrix.elements[8] += offset;
-                  camR.projectionMatrix.elements[8] -= offset;
-
-                  // Ajuste fino de la posición ocular en X
-                  camL.position.x -= offset * 0.08;
-                  camR.position.x += offset * 0.08;
-                }
-
-                // 2. Zoom Óptico L2 dentro del visor VR
-                if (window.isZoomingVR) {
-                  var zoomFactor = 1.75;
-                  camL.projectionMatrix.elements[0] *= zoomFactor;
-                  camL.projectionMatrix.elements[5] *= zoomFactor;
-                  camR.projectionMatrix.elements[0] *= zoomFactor;
-                  camR.projectionMatrix.elements[5] *= zoomFactor;
-                }
+                camL.projectionMatrix.elements[8] = offset;
+                camR.projectionMatrix.elements[8] = -offset;
               }
             };
-            console.log('[VR] Calibrador óptico y Zoom L2 estéreo activados en WebXR.');
+            console.log('[VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.');
           };
 
           if (sceneEl.hasLoaded) {
@@ -511,12 +524,13 @@
           targetPivot.add(targetMesh);
           this.targetMesh = targetMesh;
 
-          // Inicia tumbado en el suelo
-          targetPivot.rotation.x = -Math.PI / 2;
-          this.currentAngle = -Math.PI / 2;
-          this.targetAngle = -Math.PI / 2;
+          // Inicia erguido (de pie, visible desde cualquier distancia en el killhouse)
+          targetPivot.rotation.x = 0;
+          this.currentAngle = 0;
+          this.targetAngle = 0;
+          this.isPopped = true;
 
-          // Inicializar colisiones físicas (erguido o en el piso)
+          // Inicializar colisiones físicas erguido
           this.standingBody = null;
           this.fallenBody = null;
           this.currentCollider = 'none';
@@ -548,7 +562,7 @@
 
           this.el.object3D.updateMatrixWorld(true);
 
-          // 1. Colisionador erguido (cuando el blanco se levanta: obstáculo vertical de 0.76 x 1.36m)
+          // 1. Colisionador erguido (cuando el blanco está de pie: obstáculo vertical de 0.76 x 1.36m)
           var standingPos = this.el.object3D.localToWorld(new THREE.Vector3(0, 0.675, 0));
           var worldQuat = new THREE.Quaternion();
           this.el.object3D.getWorldQuaternion(worldQuat);
@@ -562,7 +576,7 @@
             quaternion: new CANNON.Quaternion(worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w)
           });
 
-          // 2. Colisionador en el suelo (cuando el blanco cae abatido: obstáculo táctico en el piso para saltar o rodear)
+          // 2. Colisionador en el suelo (cuando el blanco cae abatido)
           var fallenPos = this.el.object3D.localToWorld(new THREE.Vector3(0, 0.0, -0.675));
           var fallenShape = new CANNON.Box(new CANNON.Vec3(0.38, 0.16, 0.68));
           this.fallenBody = new CANNON.Body({
@@ -573,7 +587,7 @@
             quaternion: new CANNON.Quaternion(worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w)
           });
 
-          var desired = this.pendingColliderState || (this.isPopped && !this.isHit ? 'standing' : 'fallen');
+          var desired = this.pendingColliderState || (this.isHit ? 'fallen' : 'standing');
           this.setColliderState(desired);
         },
         setColliderState: function (state) {
@@ -606,34 +620,17 @@
           }
         },
         tick: function (time, delta) {
-          if (!this.player) return;
           var dt = (delta || 16.6) / 1000;
 
-          if (!this.isHit && !this.isPopped) {
-            var pPos = this.player.object3D.position;
-            var tPos = new THREE.Vector3();
-            this.el.object3D.getWorldPosition(tPos);
-
-            var dx = pPos.x - tPos.x;
-            var dz = pPos.z - tPos.z;
-            var distSq = dx * dx + dz * dz;
-
-            if (distSq < this.data.triggerDist * this.data.triggerDist) {
-              this.pop();
-            }
-          }
-
-          // Animación de rotación fluida
+          // Animación de rotación fluida (cae cuando es impactado o se levanta al reiniciar)
           if (Math.abs(this.currentAngle - this.targetAngle) > 0.02) {
             this.currentAngle += (this.targetAngle - this.currentAngle) * Math.min(1.0, dt * 14);
             this.targetPivot.rotation.x = this.currentAngle;
           }
         },
         pop: function () {
-          if (this.isPopped || this.isHit) return;
           this.isPopped = true;
           this.targetAngle = 0;
-          if (window.AudioFX) window.AudioFX.playPopUp();
           this.setColliderState('standing');
         },
         hit: function (point, normal) {
@@ -646,16 +643,15 @@
           if (window.onTargetEliminated) {
             window.onTargetEliminated();
           }
-          // El colisionador permanece activo en el piso como obstáculo físico para saltar o rodear
           this.setColliderState('fallen');
         },
         resetTarget: function () {
-          this.isPopped = false;
+          this.isPopped = true;
           this.isHit = false;
-          this.currentAngle = -Math.PI / 2;
-          this.targetAngle = -Math.PI / 2;
-          if (this.targetPivot) this.targetPivot.rotation.x = -Math.PI / 2;
-          this.setColliderState('fallen');
+          this.currentAngle = 0;
+          this.targetAngle = 0;
+          if (this.targetPivot) this.targetPivot.rotation.x = 0;
+          this.setColliderState('standing');
         },
         remove: function () {
           this.setColliderState('none');
@@ -957,26 +953,29 @@
       window.isFirstPerson = !window.isFirstPerson;
       var avatar = document.getElementById('avatar-container');
       var offset = document.getElementById('camera-offset');
+      var scene = document.querySelector('a-scene');
+      var isVR = scene && scene.is('vr-mode');
+      var dist3rd = isVR ? '0.45 -0.2 1.7' : '0.45 -0.2 1.6';
       if (window.isFirstPerson) {
         if (avatar) avatar.setAttribute('visible', 'false');
         if (offset) offset.setAttribute('position', '0 0 0');
         console.log('[CAM] Perspectiva: 1ª Persona (FPS limpio)');
       } else {
         if (avatar) avatar.setAttribute('visible', 'true');
-        if (offset) offset.setAttribute('position', '0.45 -0.2 1.6');
+        if (offset) offset.setAttribute('position', dist3rd);
         console.log('[CAM] Perspectiva: 3ª Persona (Sobre el hombro)');
       }
     };
 
     // CALIBRACIÓN ÓPTICA VR (CONVERGENCIA / DISTANCIA FOCAL DE LENTES)
-    window.vrLensOffset = parseFloat(localStorage.getItem('vr_lens_offset') || '0.0');
+    window.vrLensOffset = parseFloat(localStorage.getItem('vr_lens_offset_v2') || '0.0');
     window.isZoomingVR = false;
     window.adjustVRLensOffset = function (dir) {
       var step = 0.02;
       window.vrLensOffset += dir * step;
       // Limitar entre -0.30 y +0.30 (ajuste de hasta 30 niveles)
       window.vrLensOffset = Math.max(-0.30, Math.min(0.30, window.vrLensOffset));
-      localStorage.setItem('vr_lens_offset', window.vrLensOffset.toFixed(3));
+      localStorage.setItem('vr_lens_offset_v2', window.vrLensOffset.toFixed(3));
 
       var level = Math.round(window.vrLensOffset / step);
       var sign = level > 0 ? '+' : '';

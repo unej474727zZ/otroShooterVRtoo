@@ -716,3 +716,330 @@
 [8:23:43 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
 [8:23:44 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
 [8:23:44 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+
+================ LOGS RECIBIDOS (14/10/2026, 8:46:38 p. m.) ================
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.34s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.43s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.48s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.48s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.48s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.48s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.49s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.49s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.49s
+[8:45:42 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[8:45:42 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=0.61s
+[8:45:42 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[8:45:43 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[8:45:43 p.m.] [INFO] [VR] Calibrador óptico y Zoom L2 estéreo activados en WebXR.
+[8:45:43 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[8:45:43 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[8:45:47 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[8:45:47 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[8:46:29 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[8:46:30 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+
+================ LOGS RECIBIDOS (14/10/2026, 8:48:22 p. m.) ================
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.34s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.43s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.48s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.48s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.48s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.48s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.49s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.49s
+[8:45:42 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.49s
+[8:45:42 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[8:45:42 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=0.61s
+[8:45:42 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[8:45:43 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[8:45:43 p.m.] [INFO] [VR] Calibrador óptico y Zoom L2 estéreo activados en WebXR.
+[8:45:43 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[8:45:43 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[8:45:47 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[8:45:47 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[8:46:29 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[8:46:30 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[8:46:38 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+[8:46:49 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[8:48:08 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[8:48:09 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[8:48:09 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[8:48:09 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[8:48:10 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[8:48:10 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[8:48:10 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [13(1.00),15(1.00)]
+[8:48:10 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[8:48:10 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[8:48:10 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.140 Nivel: -7
+[8:48:10 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.120 Nivel: -6
+[8:48:11 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.100 Nivel: -5
+[8:48:11 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+[8:48:11 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:48:11 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:48:11 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:48:12 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.000 Nivel: 0
+[8:48:12 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:48:14 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:48:14 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:48:14 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+[8:48:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.100 Nivel: -5
+[8:48:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.120 Nivel: -6
+[8:48:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.140 Nivel: -7
+[8:48:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[8:48:16 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[8:48:16 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[8:48:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[8:48:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+
+================ LOGS RECIBIDOS (14/10/2026, 8:51:43 p. m.) ================
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.23s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.31s
+[8:49:25 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[8:49:25 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=0.74s
+[8:49:25 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[8:49:26 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[8:49:26 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[8:49:26 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[8:49:26 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[8:49:51 p.m.] [INFO] [NPC] Asesinatos: 1 / 30
+[8:49:51 p.m.] [INFO] [TÁCTICA] ¡Cazador abatido! Un patrullero cercano fue alertado y sale a cazarte.
+[8:50:01 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[8:50:01 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[8:50:02 p.m.] [WARN] THREE.WebGLRenderer: Can't change size while VR device is presenting.
+[8:50:02 p.m.] [WARN] THREE.WebGLRenderer: Can't change size while VR device is presenting.
+[8:51:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:16 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:16 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.020 Nivel: +1
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.040 Nivel: +2
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.060 Nivel: +3
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.080 Nivel: +4
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.060 Nivel: +3
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.040 Nivel: +2
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.020 Nivel: +1
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.100 Nivel: -5
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.120 Nivel: -6
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.140 Nivel: -7
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[8:51:21 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [14(1.00)]
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.280 Nivel: -14
+[8:51:22 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:22 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:22 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.280 Nivel: -14
+[8:51:23 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:25 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:25 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.280 Nivel: -14
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.140 Nivel: -7
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.120 Nivel: -6
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.100 Nivel: -5
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+
+================ LOGS RECIBIDOS (14/10/2026, 8:52:16 p. m.) ================
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.23s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.31s
+[8:49:25 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[8:49:25 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=0.74s
+[8:49:25 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[8:49:26 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[8:49:26 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[8:49:26 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[8:49:26 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[8:49:51 p.m.] [INFO] [NPC] Asesinatos: 1 / 30
+[8:49:51 p.m.] [INFO] [TÁCTICA] ¡Cazador abatido! Un patrullero cercano fue alertado y sale a cazarte.
+[8:50:01 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[8:50:01 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[8:50:02 p.m.] [WARN] THREE.WebGLRenderer: Can't change size while VR device is presenting.
+[8:50:02 p.m.] [WARN] THREE.WebGLRenderer: Can't change size while VR device is presenting.
+[8:51:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:16 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:16 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.020 Nivel: +1
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.040 Nivel: +2
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.060 Nivel: +3
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.080 Nivel: +4
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.060 Nivel: +3
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.040 Nivel: +2
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.020 Nivel: +1
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.100 Nivel: -5
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.120 Nivel: -6
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.140 Nivel: -7
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[8:51:21 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [14(1.00)]
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.280 Nivel: -14
+[8:51:22 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:22 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:22 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.280 Nivel: -14
+[8:51:23 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:25 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:25 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.280 Nivel: -14
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.140 Nivel: -7
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.120 Nivel: -6
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.100 Nivel: -5
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+[8:51:43 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+
+================ LOGS RECIBIDOS (14/10/2026, 8:52:21 p. m.) ================
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.23s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.31s
+[8:49:25 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.31s
+[8:49:25 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[8:49:25 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=0.74s
+[8:49:25 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[8:49:26 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[8:49:26 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[8:49:26 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[8:49:26 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[8:49:51 p.m.] [INFO] [NPC] Asesinatos: 1 / 30
+[8:49:51 p.m.] [INFO] [TÁCTICA] ¡Cazador abatido! Un patrullero cercano fue alertado y sale a cazarte.
+[8:50:01 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[8:50:01 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[8:50:02 p.m.] [WARN] THREE.WebGLRenderer: Can't change size while VR device is presenting.
+[8:50:02 p.m.] [WARN] THREE.WebGLRenderer: Can't change size while VR device is presenting.
+[8:51:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:15 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:16 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:16 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.020 Nivel: +1
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.040 Nivel: +2
+[8:51:17 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.060 Nivel: +3
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.080 Nivel: +4
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.060 Nivel: +3
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.040 Nivel: +2
+[8:51:18 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.020 Nivel: +1
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: 0.000 Nivel: 0
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+[8:51:19 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.100 Nivel: -5
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.120 Nivel: -6
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.140 Nivel: -7
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[8:51:20 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[8:51:21 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [14(1.00)]
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[8:51:21 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.280 Nivel: -14
+[8:51:22 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:22 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:22 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.280 Nivel: -14
+[8:51:23 p.m.] [INFO] [CAM] Perspectiva: 1ª Persona (FPS limpio)
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:24 p.m.] [INFO] [CAM] Perspectiva: 3ª Persona (Sobre el hombro)
+[8:51:24 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:25 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:25 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.300 Nivel: -15
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.280 Nivel: -14
+[8:51:26 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.260 Nivel: -13
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.240 Nivel: -12
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.220 Nivel: -11
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.200 Nivel: -10
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.180 Nivel: -9
+[8:51:27 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.160 Nivel: -8
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.140 Nivel: -7
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.120 Nivel: -6
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.100 Nivel: -5
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:28 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.020 Nivel: -1
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.040 Nivel: -2
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.060 Nivel: -3
+[8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
+[8:51:43 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+[8:52:16 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
