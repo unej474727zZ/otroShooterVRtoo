@@ -1818,21 +1818,21 @@
     AFRAME.registerComponent('tactical-radar', {
       init: function () {
         this.dots = Array.from(this.el.querySelectorAll('.radar-dot'));
-        this.lastUpdate = 0;
         this.tempVec = new THREE.Vector3();
-        this.yawEl = document.querySelector('#camera-yaw');
+        this.camPos = new THREE.Vector3();
+        this.camForward = new THREE.Vector3();
+        this.cameraEl = this.el.closest('a-camera') || document.querySelector('a-camera');
         this.maxRange = 26; // Rango de detección en metros
         this.radarRadius = 0.1125; // Escala adaptada para distancia Z = -2.5
       },
-      tick: function (time) {
-        // Actualiza cada 90ms: ultra liviano en CPU móvil
-        if (time - this.lastUpdate < 90) return;
-        this.lastUpdate = time;
-
-        if (!this.yawEl) {
-          this.yawEl = document.querySelector('#camera-yaw');
-          if (!this.yawEl) return;
+      tick: function () {
+        if (!this.cameraEl) {
+          this.cameraEl = this.el.closest('a-camera') || document.querySelector('a-camera');
+          if (!this.cameraEl) return;
         }
+
+        var camera3D = this.cameraEl.getObject3D('camera');
+        if (!camera3D) return;
 
         var scene = this.el.sceneEl;
         var npcMgr = scene && scene.components['npc-manager'];
@@ -1845,8 +1845,23 @@
           return;
         }
 
+        // Obtener posición y vector de orientación real de la cabeza (giroscopio + palanca combinados)
+        camera3D.getWorldPosition(this.camPos);
+        this.camForward.set(0, 0, -1).transformDirection(camera3D.matrixWorld);
+
+        // Proyección horizontal pura en el plano X-Z (sin deformación al mirar arriba/abajo)
+        var fX = this.camForward.x;
+        var fZ = this.camForward.z;
+        var fLen = Math.sqrt(fX * fX + fZ * fZ) || 1;
+        fX /= fLen;
+        fZ /= fLen;
+
+        // Vector perpendicular hacia la derecha relativa de la mirada
+        var rX = -fZ;
+        var rZ = fX;
+
         var tempVec = this.tempVec;
-        var yawObj = this.yawEl.object3D;
+        var camPos = this.camPos;
         var maxR = this.maxRange;
         var radR = this.radarRadius;
 
@@ -1867,19 +1882,22 @@
           }
 
           npc.object3D.getWorldPosition(tempVec);
-          yawObj.worldToLocal(tempVec);
+          var dx = tempVec.x - camPos.x;
+          var dz = tempVec.z - camPos.z;
 
-          // tempVec.x: derecha (+), izquierda (-)
-          // -tempVec.z: adelante (+), atrás (-)
-          var dist = Math.sqrt(tempVec.x * tempVec.x + tempVec.z * tempVec.z);
+          var dist = Math.sqrt(dx * dx + dz * dz);
           if (dist > maxR) {
             dot.setAttribute('visible', false);
             continue;
           }
 
+          // Componente adelante/atrás y derecha/izquierda relativo hacia donde apunta la cabeza
+          var relForward = dx * fX + dz * fZ;
+          var relRight = dx * rX + dz * rZ;
+
           var scale = (dist / maxR) * radR;
-          var nx = tempVec.x / (dist || 1);
-          var nz = -tempVec.z / (dist || 1);
+          var nx = relRight / (dist || 1);
+          var nz = relForward / (dist || 1);
 
           dot.object3D.position.x = nx * scale;
           dot.object3D.position.y = nz * scale;

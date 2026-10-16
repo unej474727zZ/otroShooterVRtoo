@@ -1043,3 +1043,29 @@
 [8:51:29 p.m.] [INFO] [VR CALIBRACIÓN] Offset de lente: -0.080 Nivel: -4
 [8:51:43 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
 [8:52:16 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+
+================ LOGS RECIBIDOS (16/10/2026, 5:23:42 p. m.) ================
+[5:22:35 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.14s
+[5:22:35 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.30s
+[5:22:35 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.30s
+[5:22:35 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.30s
+[5:22:35 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.31s
+[5:22:35 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.31s
+[5:22:35 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.31s
+[5:22:35 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.31s
+[5:22:36 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[5:22:36 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=0.72s
+[5:22:36 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[5:22:37 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[5:22:37 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[5:22:37 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[5:22:37 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[5:23:20 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[5:23:24 p.m.] [INFO] [NPC] Asesinatos: 1 / 30
+[5:23:24 p.m.] [INFO] [TÁCTICA] ¡Cazador abatido! Un patrullero cercano fue alertado y sale a cazarte.
+[5:23:34 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:23:34 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:23:34 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[5:23:34 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[5:23:34 p.m.] [WARN] THREE.WebGLRenderer: Can't change size while VR device is presenting.
+[5:23:34 p.m.] [WARN] THREE.WebGLRenderer: Can't change size while VR device is presenting.
