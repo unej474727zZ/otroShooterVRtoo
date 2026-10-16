@@ -259,22 +259,18 @@
       }
     });
 
-      // Reparar desajuste de cámara al entrar a VR y sincronizar perspectiva
+      // Sincronizar perspectiva y avatar entre modo VR y modo Pantalla 3D
       AFRAME.registerComponent('vr-camera-fix', {
         init: function () {
           var scene = this.el;
           scene.addEventListener('enter-vr', function () {
-            var avatar = document.getElementById('avatar-container');
             var offset = document.getElementById('camera-offset');
-            if (window.isFirstPerson) {
-              if (avatar) avatar.setAttribute('visible', 'false');
-              if (offset) offset.setAttribute('position', '0 0 0');
-            } else {
-              if (avatar) avatar.setAttribute('visible', 'true');
-              if (offset) offset.setAttribute('position', '0.45 -0.2 1.7');
-            }
+            if (offset) offset.setAttribute('position', '0 0 0');
             var pitchWrapper = document.getElementById('camera-pitch');
             if (pitchWrapper) pitchWrapper.object3D.rotation.set(0, 0, 0); // Horizonte nivelado a cero
+            var avatar = document.getElementById('avatar-container');
+            if (avatar) avatar.setAttribute('visible', 'false'); // Ocultar avatar solo en VR para rendimiento y sincronización óptica
+            window.isFirstPerson = true;
 
             // Actualizar dimensiones inmediatamente al entrar a VR
             setTimeout(function () {
@@ -284,15 +280,11 @@
             }, 100);
           });
           scene.addEventListener('exit-vr', function () {
-            var avatar = document.getElementById('avatar-container');
             var offset = document.getElementById('camera-offset');
-            if (window.isFirstPerson) {
-              if (avatar) avatar.setAttribute('visible', 'false');
-              if (offset) offset.setAttribute('position', '0 0 0');
-            } else {
-              if (avatar) avatar.setAttribute('visible', 'true');
-              if (offset) offset.setAttribute('position', '0.45 -0.2 1.6');
-            }
+            if (offset) offset.setAttribute('position', '0.38 -0.05 1.15');
+            var avatar = document.getElementById('avatar-container');
+            if (avatar) avatar.setAttribute('visible', 'true'); // Restaurar avatar en modo pantalla 3D
+            window.isFirstPerson = false;
           });
         }
       });
@@ -344,8 +336,8 @@
                 var h = window.innerHeight || 576;
                 var eyeAspect = (w * 0.5) / h; // Relación de aspecto real por ojo
 
-                // FOV 80 grados idéntico al modo 2D (elimina la sensación de zoom forzado o estar 'muy cerca')
-                var baseFov = 80;
+                // FOV 96 grados natural en VR (elimina la sensación de zoom forzado o estar 'muy cerca')
+                var baseFov = 96;
                 var zoomFactor = window.isZoomingVR ? 1.75 : 1.0;
                 var targetP11 = (1.0 / Math.tan((baseFov * Math.PI / 180) / 2)) * zoomFactor;
                 var targetP00 = targetP11 / eyeAspect;
@@ -357,9 +349,19 @@
                 camR.projectionMatrix.elements[5] = targetP11;
 
                 // 2. Calibración óptica de convergencia / Distancia interpupilar (D-Pad Izquierda / Derecha)
-                var offset = window.vrLensOffset || 0.0;
+                // Por defecto +0.16 para alinear con las lentes físicas de visores en pantallas panorámicas
+                var offset = (typeof window.vrLensOffset === 'number') ? window.vrLensOffset : 0.16;
                 camL.projectionMatrix.elements[8] = offset;
                 camR.projectionMatrix.elements[8] = -offset;
+
+                // Actualizar matriz inversa para evitar distorsiones en frustum culling
+                camL.projectionMatrixInverse.copy(camL.projectionMatrix).invert();
+                camR.projectionMatrixInverse.copy(camR.projectionMatrix).invert();
+
+                // 3. Separación de ojos (IPD virtual optimizada para interiores CQB: 46mm en lugar de 64mm)
+                // Suaviza el paralaje y elimina por completo la fatiga de juntar los ojos / bizquear
+                camL.position.x = -0.023;
+                camR.position.x = 0.023;
               }
             };
             console.log('[VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.');
@@ -417,6 +419,23 @@
             gain.connect(this.ctx.destination);
             osc.start();
             osc.stop(this.ctx.currentTime + 0.12);
+          } catch (e) { }
+        },
+        playThreatAlert: function () {
+          try {
+            this.init();
+            if (!this.ctx) return;
+            var osc = this.ctx.createOscillator();
+            var gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(1400, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.08);
           } catch (e) { }
         }
       };
@@ -947,39 +966,37 @@
       });
     })();
 
-    // Alternar entre 1ª Persona (FPS limpio) y 3ª Persona (sobre el hombro)
-    window.isFirstPerson = false; // Por defecto: 3ra persona perfecta (como en imagen 2)
+    // Alternar entre 1ª Persona (FPS) y 3ª Persona (Sobre el hombro con avatar)
+    window.isFirstPerson = false; // Por defecto en pantalla 3D normal: 3ra persona con avatar visible
     window.togglePerspective = function () {
       window.isFirstPerson = !window.isFirstPerson;
       var avatar = document.getElementById('avatar-container');
       var offset = document.getElementById('camera-offset');
-      var scene = document.querySelector('a-scene');
-      var isVR = scene && scene.is('vr-mode');
-      var dist3rd = isVR ? '0.45 -0.2 1.7' : '0.45 -0.2 1.6';
       if (window.isFirstPerson) {
         if (avatar) avatar.setAttribute('visible', 'false');
         if (offset) offset.setAttribute('position', '0 0 0');
-        console.log('[CAM] Perspectiva: 1ª Persona (FPS limpio)');
+        console.log('[CAM] Perspectiva: 1ª Persona (FPS)');
       } else {
         if (avatar) avatar.setAttribute('visible', 'true');
-        if (offset) offset.setAttribute('position', dist3rd);
+        if (offset) offset.setAttribute('position', '0.38 -0.05 1.15');
         console.log('[CAM] Perspectiva: 3ª Persona (Sobre el hombro)');
       }
     };
 
     // CALIBRACIÓN ÓPTICA VR (CONVERGENCIA / DISTANCIA FOCAL DE LENTES)
-    window.vrLensOffset = parseFloat(localStorage.getItem('vr_lens_offset_v2') || '0.0');
+    window.vrLensOffset = parseFloat(localStorage.getItem('vr_lens_offset_v3') || '0.16');
     window.isZoomingVR = false;
     window.adjustVRLensOffset = function (dir) {
-      var step = 0.02;
+      var step = 0.015;
       window.vrLensOffset += dir * step;
-      // Limitar entre -0.30 y +0.30 (ajuste de hasta 30 niveles)
-      window.vrLensOffset = Math.max(-0.30, Math.min(0.30, window.vrLensOffset));
-      localStorage.setItem('vr_lens_offset_v2', window.vrLensOffset.toFixed(3));
+      // Rango amplio y seguro para cualquier tamaño de móvil (-0.05 a +0.45)
+      window.vrLensOffset = Math.max(-0.05, Math.min(0.45, window.vrLensOffset));
+      localStorage.setItem('vr_lens_offset_v3', window.vrLensOffset.toFixed(3));
 
-      var level = Math.round(window.vrLensOffset / step);
+      // Nivel relativo al centro óptico óptimo (+0.16)
+      var level = Math.round((window.vrLensOffset - 0.16) / step);
       var sign = level > 0 ? '+' : '';
-      var msg = 'LENTE: ' + sign + level;
+      var msg = 'OPTICA: ' + (level === 0 ? 'CENTRO (0)' : (sign + level));
 
       var fb = document.getElementById('vr-lens-feedback');
       if (fb) {
@@ -991,7 +1008,7 @@
         }, 1800);
       }
 
-      console.log('[VR CALIBRACIÓN] Offset de lente:', window.vrLensOffset.toFixed(3), 'Nivel:', sign + level);
+      console.log('[VR OPTICA] Offset:', window.vrLensOffset.toFixed(3), 'Nivel:', sign + level);
     };
 
     function copyLogs() {
@@ -1191,6 +1208,9 @@
           var mesh = rootEl.getObject3D('mesh');
           if (!mesh) return;
           mesh.traverse(function (node) {
+            if (node.isMesh || node.isSkinnedMesh) {
+              node.frustumCulled = false; // Evita que el cuerpo del avatar desaparezca al rotar la cámara
+            }
             if (node.isMesh && node.material) {
               var mats = Array.isArray(node.material) ? node.material : [node.material];
               mats.forEach(function (mat) {
@@ -1259,7 +1279,7 @@
             }
           });
 
-          // Visor luminoso en el casco (ojos hostiles: rojo para cazadores, ámbar para patrulleros)
+          // Visor luminoso en el casco (Doble LED verde táctico nocturno - estilo Splinter Cell)
           var headBone = null;
           mesh.traverse(function (child) {
             if (child.isBone) {
@@ -1272,12 +1292,23 @@
 
           if (headBone && !headBone.userData.hasVisor) {
             headBone.userData.hasVisor = true;
-            var visorGeom = new THREE.BoxGeometry(0.18, 0.05, 0.06);
-            var visorMat = new THREE.MeshBasicMaterial({ color: self.data.glowColor });
-            var visor = new THREE.Mesh(visorGeom, visorMat);
-            visor.name = 'cyberVisor';
-            visor.position.set(0, 0.08, 0.12);
-            headBone.add(visor);
+            var visorGroup = new THREE.Group();
+            visorGroup.name = 'cyberVisorGroup';
+
+            var visorMat = new THREE.MeshBasicMaterial({ color: 0x00ff66 });
+            var eyeGeo = new THREE.BoxGeometry(0.04, 0.025, 0.04);
+
+            var leftEye = new THREE.Mesh(eyeGeo, visorMat);
+            leftEye.position.set(-0.045, 0.08, 0.12);
+            leftEye.name = 'cyberVisor';
+
+            var rightEye = new THREE.Mesh(eyeGeo, visorMat);
+            rightEye.position.set(0.045, 0.08, 0.12);
+            rightEye.name = 'cyberVisor';
+
+            visorGroup.add(leftEye);
+            visorGroup.add(rightEye);
+            headBone.add(visorGroup);
           }
         });
       }
@@ -1375,7 +1406,7 @@
           { id: 'die', src: '#avatar-prone', visible: false, loop: 'once' }
         ];
 
-        var visorColor = (role === 'hunter') ? '#ff0033' : '#ffaa00'; // Rojo para cazadores, Ámbar para patrulleros
+        var visorColor = '#00ff66'; // Verde táctico nocturno para todos los NPC
 
         models.forEach(m => {
           let modelEl = document.createElement('a-entity');
@@ -1397,10 +1428,32 @@
         this.npcs.push(npc);
       },
       randomSpawn: function (npc, role) {
-        let angle = Math.random() * Math.PI * 2;
-        let radius = (role === 'hunter') ? (14 + Math.random() * 8) : (20 + Math.random() * 15);
         let pPos = document.querySelector('#rig').object3D.position;
-        npc.setAttribute('position', (pPos.x + Math.cos(angle) * radius) + ' -2.0 ' + (pPos.z + Math.sin(angle) * radius));
+        // Elegir posición aleatoria a buena distancia (entre 18 y 28 metros del jugador)
+        let angle = Math.random() * Math.PI * 2;
+        let radius = (role === 'hunter') ? (16 + Math.random() * 8) : (20 + Math.random() * 10);
+        let spawnX = pPos.x + Math.cos(angle) * radius;
+        let spawnY = -2.0;
+        let spawnZ = pPos.z + Math.sin(angle) * radius;
+
+        // Mantener dentro del perímetro del edificio
+        spawnX = Math.max(-62, Math.min(-5, spawnX));
+        spawnZ = Math.max(-6, Math.min(28, spawnZ));
+
+        npc.setAttribute('position', spawnX + ' ' + spawnY + ' ' + spawnZ);
+        if (npc.object3D) {
+          npc.object3D.position.set(spawnX, spawnY, spawnZ);
+          npc.object3D.rotation.y = Math.random() * Math.PI * 2;
+        }
+
+        // ¡CRUCIAL! Mover el cuerpo físico de CANNON.js.
+        // Si no se actualiza npc.body.position, las físicas de A-Frame revierten la posición
+        // y hacían que el enemigo se levantara exactamente en el mismo lugar donde fue abatido.
+        if (npc.body) {
+          npc.body.position.set(spawnX, spawnY, spawnZ);
+          npc.body.velocity.set(0, 0, 0);
+          npc.body.angularVelocity.set(0, 0, 0);
+        }
       },
       promotePatrollerToHunter: function () {
         // Busca al patrullero más cercano y lo convierte en cazador
@@ -1434,13 +1487,24 @@
           this.promotePatrollerToHunter();
         }
 
-        // El NPC caído reaparece tras 3s como patrullero a distancia
+        // 1. Dejar el cadáver en el suelo 2.2 segundos para dar feedback visual de la baja
         setTimeout(() => {
-          if (npc.parentNode) {
+          if (npc && npc.parentNode) {
+            // Ocultar el cuerpo caído para que no se vea teletransportarse o revivir
+            npc.setAttribute('visible', false);
+            if (npc.object3D) npc.object3D.visible = false;
+          }
+        }, 2200);
+
+        // 2. Reaparecer como un nuevo enemigo a distancia tras 4 segundos
+        setTimeout(() => {
+          if (npc && npc.parentNode) {
             this.randomSpawn(npc, 'patrol');
+            npc.setAttribute('visible', true);
+            if (npc.object3D) npc.object3D.visible = true;
             npc.components['npc-ai'].respawn('patrol');
           }
-        }, 3000);
+        }, 4000);
       }
     });
 
@@ -1468,7 +1532,7 @@
       },
       setRole: function (newRole) {
         this.role = newRole;
-        var colorHex = (newRole === 'hunter') ? 0xff0033 : 0xffaa00;
+        var colorHex = 0x00ff66; // Verde táctico nocturno para todos los NPC
         this.el.object3D.traverse(function (child) {
           if (child.name === 'cyberVisor' && child.material) {
             child.material.color.setHex(colorHex);
@@ -1527,8 +1591,15 @@
           this.el.object3D.rotation.y = Math.atan2(dxPlayer, dzPlayer);
 
           if (distToPlayer < 6.5) {
-            this.state = 'attack';
-            this.switchAnimation('fire');
+            if (this.state !== 'attack') {
+              this.state = 'attack';
+              this.switchAnimation('fire');
+              // Ventana de reacción de 750ms antes del primer disparo
+              this.lastAttack = time - (this.attackCooldown - 750);
+              if (window.AudioFX && window.AudioFX.playThreatAlert) {
+                window.AudioFX.playThreatAlert();
+              }
+            }
 
             if (this.el.body) {
               this.el.body.velocity.set(0, 0, 0);
@@ -1565,8 +1636,14 @@
           if (distToPlayer < 7.0) {
             // Reacción defensiva si el jugador se acerca
             this.el.object3D.rotation.y = Math.atan2(dxPlayer, dzPlayer);
-            this.state = 'attack';
-            this.switchAnimation('fire');
+            if (this.state !== 'attack') {
+              this.state = 'attack';
+              this.switchAnimation('fire');
+              this.lastAttack = time - (this.attackCooldown - 800);
+              if (window.AudioFX && window.AudioFX.playThreatAlert) {
+                window.AudioFX.playThreatAlert();
+              }
+            }
             if (this.el.body) this.el.body.velocity.set(0, 0, 0);
 
             if (!this.lastAttack || time - this.lastAttack > (this.attackCooldown + 300)) {
@@ -1602,6 +1679,232 @@
               this.el.object3D.position.z += Math.cos(angleWp) * (patrolSpeed * 0.016);
             }
           }
+        }
+      }
+    });
+
+    // SENSOR DE PROXIMIDAD TÁCTICO DE 5 PUNTOS (SOLO PUNTOS: CERO FONDOS, CERO AROS)
+    AFRAME.registerComponent('tactical-radar', {
+      init: function () {
+        this.dots = Array.from(this.el.querySelectorAll('.radar-dot'));
+        this.lastUpdate = 0;
+        this.tempVec = new THREE.Vector3();
+        this.yawEl = document.querySelector('#camera-yaw');
+        this.maxRange = 26; // Rango de detección en metros
+        this.radarRadius = 0.1125; // Escala adaptada para distancia Z = -2.5
+      },
+      tick: function (time) {
+        // Actualiza cada 90ms: ultra liviano en CPU móvil
+        if (time - this.lastUpdate < 90) return;
+        this.lastUpdate = time;
+
+        if (!this.yawEl) {
+          this.yawEl = document.querySelector('#camera-yaw');
+          if (!this.yawEl) return;
+        }
+
+        var scene = this.el.sceneEl;
+        var npcMgr = scene && scene.components['npc-manager'];
+        var npcs = npcMgr ? npcMgr.npcs : null;
+
+        if (!npcs || npcs.length === 0) {
+          for (var d = 0; d < this.dots.length; d++) {
+            this.dots[d].setAttribute('visible', false);
+          }
+          return;
+        }
+
+        var tempVec = this.tempVec;
+        var yawObj = this.yawEl.object3D;
+        var maxR = this.maxRange;
+        var radR = this.radarRadius;
+
+        for (var i = 0; i < this.dots.length; i++) {
+          var dot = this.dots[i];
+          var npc = npcs[i];
+
+          if (!npc || !npc.object3D || !dot) {
+            if (dot) dot.setAttribute('visible', false);
+            continue;
+          }
+
+          var ai = npc.components['npc-ai'];
+          // Ocultar si el enemigo está muerto o no visible
+          if (!ai || ai.state === 'die' || !npc.object3D.visible) {
+            dot.setAttribute('visible', false);
+            continue;
+          }
+
+          npc.object3D.getWorldPosition(tempVec);
+          yawObj.worldToLocal(tempVec);
+
+          // tempVec.x: derecha (+), izquierda (-)
+          // -tempVec.z: adelante (+), atrás (-)
+          var dist = Math.sqrt(tempVec.x * tempVec.x + tempVec.z * tempVec.z);
+          if (dist > maxR) {
+            dot.setAttribute('visible', false);
+            continue;
+          }
+
+          var scale = (dist / maxR) * radR;
+          var nx = tempVec.x / (dist || 1);
+          var nz = -tempVec.z / (dist || 1);
+
+          dot.object3D.position.x = nx * scale;
+          dot.object3D.position.y = nz * scale;
+          dot.setAttribute('visible', true);
+        }
+      }
+    });
+
+    // RETÍCULA HOLOGRÁFICA VR CON PROFUNDIDAD DINÁMICA Y TELÉMETRO LÁSER DIGITAL
+    // Elimina el conflicto vergencia-acomodación y muestra la distancia exacta al objetivo estilo Action City.
+    AFRAME.registerComponent('dynamic-depth-reticle', {
+      schema: {
+        maxDist: { default: 35.0 },
+        minDist: { default: 0.7 },
+        defaultDist: { default: 28.0 }
+      },
+      init: function () {
+        this.raycaster = new THREE.Raycaster();
+        this.origin = new THREE.Vector3();
+        this.direction = new THREE.Vector3();
+        this.currentDist = 20.0;
+        this.targetDist = 20.0;
+        this.lastRayTime = 0;
+        this.lastTextTime = 0;
+        this.materialsConfigured = false;
+        this.cameraEl = this.el.closest('a-camera') || document.querySelector('a-camera');
+        this.avatarEl = document.getElementById('avatar-container');
+        this.rangeTextEl = document.getElementById('reticle-range-text');
+        this._lastTextVal = '';
+      },
+      isIgnored: function (obj) {
+        if (!obj) return true;
+        if (!obj.visible) {
+          // Si es invisible, verificar si es una hitbox de NPC vivo
+          var isNpcHitbox = obj.el && (obj.el.classList.contains('npc-body') || obj.el.classList.contains('npc-head'));
+          if (isNpcHitbox) {
+            var npcEl = obj.el.closest('[npc-ai]') || obj.el.parentEl;
+            if (npcEl) {
+              var ai = npcEl.components && npcEl.components['npc-ai'];
+              if (!ai || ai.state === 'die' || (npcEl.object3D && !npcEl.object3D.visible)) {
+                return true; // NPC muerto u oculto durante respawn -> ignorar
+              }
+              return false; // NPC vivo -> colisión válida para la mira
+            }
+          }
+          return true; // Cualquier otro objeto invisible se ignora
+        }
+        if (obj.type !== 'Mesh' && obj.type !== 'SkinnedMesh') return true;
+        if (obj.name && (obj.name.includes('Line') || obj.name.includes('tracer') || obj.name.includes('hole'))) return true;
+
+        // Ignorar todo lo que pertenezca a la cámara (HUD, radar, la propia mira) o al avatar del jugador
+        var curr = obj;
+        while (curr) {
+          if (curr === this.el.object3D) return true;
+          if (this.cameraEl && curr === this.cameraEl.object3D) return true;
+          if (this.avatarEl && curr === this.avatarEl.object3D) return true;
+          curr = curr.parent;
+        }
+        return false;
+      },
+      tick: function (time, delta) {
+        // Configurar materiales para que NUNCA se oculte detrás de paredes o geometrías
+        if (!this.materialsConfigured) {
+          var meshCount = 0;
+          this.el.object3D.traverse(node => {
+            if (node.isMesh && node.material) {
+              meshCount++;
+              node.material.depthTest = false; // 100% visible siempre, nunca tapada
+              node.material.depthWrite = false;
+              node.material.transparent = true;
+              node.material.side = THREE.DoubleSide;
+              node.material.needsUpdate = true;
+              node.renderOrder = 99999;
+            }
+          });
+          if (meshCount >= 1) this.materialsConfigured = true;
+        }
+
+        // Raycasting cada ~35ms para máximo rendimiento en móviles
+        if (time - this.lastRayTime > 35) {
+          this.lastRayTime = time;
+          this.updateTargetDist();
+        }
+
+        // Suavizado cinemático fluido (Lerp a 60-90 FPS)
+        var dt = delta ? Math.min(delta, 100) : 16.6;
+        var lerpFactor = Math.min(1.0, 0.42 * (dt / 16.666));
+        this.currentDist += (this.targetDist - this.currentDist) * lerpFactor;
+
+        // Posicionar directamente a lo largo del eje focal de la cámara
+        this.el.object3D.position.set(0, 0, -this.currentDist);
+
+        // Escala con ligera curva de perspectiva (respiración óptica no lineal):
+        // En distancias cortas (1-3m) el punto se hace más compacto y nítido.
+        // En distancias largas (15-30m) se abre suavemente dando sensación física de lejanía y apertura del haz.
+        var s = Math.pow(this.currentDist / 2.5, 0.88);
+        this.el.object3D.scale.set(s, s, s);
+
+        // Actualizar telémetro láser digital (distancia exacta en metros estilo Action City)
+        if (!this.rangeTextEl) this.rangeTextEl = document.getElementById('reticle-range-text');
+        if (this.rangeTextEl && (time - this.lastTextTime > 65)) {
+          this.lastTextTime = time;
+          var d = this.currentDist;
+          var txt = '';
+          var col = '#00ffcc';
+          if (d >= 27.0) {
+            txt = '>30m';
+            col = '#7799aa'; // Color tenue horizonte / cielo
+          } else if (d < 4.5) {
+            txt = d.toFixed(1) + 'm';
+            col = '#ff3344'; // Alerta roja proximidad CQB / peligro cuerpo a cuerpo
+          } else {
+            txt = d.toFixed(1) + 'm';
+            col = '#00ffcc'; // Verde-cian táctico
+          }
+          if (this._lastTextVal !== txt) {
+            this.rangeTextEl.setAttribute('value', txt);
+            this.rangeTextEl.setAttribute('color', col);
+            this._lastTextVal = txt;
+          }
+        }
+      },
+      updateTargetDist: function () {
+        if (!this.cameraEl) {
+          this.cameraEl = this.el.closest('a-camera') || document.querySelector('a-camera');
+          if (!this.cameraEl) return;
+        }
+        var camera3D = this.cameraEl.getObject3D('camera');
+        if (!camera3D) return;
+
+        camera3D.getWorldPosition(this.origin);
+        this.direction.set(0, 0, -1).transformDirection(camera3D.matrixWorld);
+
+        this.raycaster.set(this.origin, this.direction);
+        this.raycaster.far = this.data.maxDist + 5;
+
+        var scene = this.el.sceneEl;
+        if (!scene || !scene.object3D) return;
+
+        var intersects = this.raycaster.intersectObjects(scene.object3D.children, true);
+        var foundHit = null;
+
+        for (var i = 0; i < intersects.length; i++) {
+          var hit = intersects[i];
+          if (!this.isIgnored(hit.object)) {
+            foundHit = hit;
+            break;
+          }
+        }
+
+        if (foundHit) {
+          // Separación de 8cm frente a la superficie impactada para evitar z-fighting
+          this.targetDist = Math.max(this.data.minDist, foundHit.distance - 0.08);
+        } else {
+          // Mirando al cielo o al horizonte lejano: descanso ocular en infinito óptico
+          this.targetDist = this.data.defaultDist;
         }
       }
     });
@@ -2127,12 +2430,12 @@
 
         var camera = document.querySelector('a-camera');
         if (camera) {
-          var targetFov = zoomPressed ? 35 : 80; // FOV 35 cuando apuntas con L2, 80 vista amplia normal
-          var currentFov = 80;
+          var targetFov = zoomPressed ? 40 : 96; // FOV 40 cuando apuntas con L2, 96 vista amplia natural
+          var currentFov = 96;
           if (camera.components && camera.components.camera) {
             currentFov = camera.components.camera.data.fov;
           } else {
-            currentFov = parseFloat(camera.getAttribute('fov') || 80);
+            currentFov = parseFloat(camera.getAttribute('fov') || 96);
           }
 
           if (Math.abs(currentFov - targetFov) > 0.5) {
@@ -2387,7 +2690,10 @@
         var isFiringIdle = r1Pressed && !isWalking && !isWalkingBack && !isRunning && !isProne && !isJump;
         var isIdle = !isWalking && !isWalkingBack && !isRunning && !isProne && !isJump && !isFiringIdle;
 
+        var avatarCont = document.getElementById('avatar-container');
+        if (!avatarCont || avatarCont.getAttribute('visible') === 'false' || (avatarCont.object3D && !avatarCont.object3D.visible)) return; // Ahorro total de CPU en VR al estar oculto el avatar
         var idleEl = document.querySelector('#model-idle');
+        if (!idleEl) return; // Optimización instantánea: no hay avatar del jugador, omitir animaciones
         var walkEl = document.querySelector('#model-walk');
         var backEl = document.querySelector('#model-back');
         var runEl = document.querySelector('#model-run');
@@ -2620,6 +2926,9 @@
 
           var bestBone = null;
           mesh.traverse(function (child) {
+            if (child.isMesh || child.isSkinnedMesh) {
+              child.frustumCulled = false;
+            }
             if (child.isBone) {
               var n = child.name.toLowerCase();
               if (n.includes('righthand') && !n.includes('thumb') && !n.includes('index') && !n.includes('middle') && !n.includes('ring') && !n.includes('pinky')) {
@@ -2633,6 +2942,9 @@
             var srcPath = srcEl ? srcEl.getAttribute('src') : self.data.src;
 
             function applyWeapon(sceneClone) {
+              sceneClone.traverse(function (node) {
+                if (node.isMesh) node.frustumCulled = false;
+              });
               bestBone.add(sceneClone);
               sceneClone.position.set(self.data.position.x, self.data.position.y, self.data.position.z);
               sceneClone.rotation.set(
@@ -2835,7 +3147,7 @@
       <!-- La cámara envuelta en dos entidades para controlar Pitch y Yaw independientemente de las físicas -->
       <a-entity id="camera-yaw" position="0 0 0">
         <!-- RENDERIZADO DEL AVATAR 3D -->
-        <!-- Visible por defecto en 3ra persona sobre el hombro (la perfecta de imagen 2) -->
+        <!-- Visible por defecto en 3ra persona en pantalla normal; se oculta automáticamente al entrar a VR -->
         <a-entity id="avatar-container" position="0 -0.35 0" rotation="0 180 0" visible="true" avatar-skin>
           <a-entity id="model-idle" gltf-model="#avatar-idle" attach-weapon="src: #rifle-model"
             animation-mixer="clip: *; loop: repeat; timeScale: 1" visible="true"></a-entity>
@@ -2853,33 +3165,46 @@
             animation-mixer="clip: *; loop: repeat; timeScale: 0" visible="false"></a-entity>
         </a-entity>
         <a-entity id="camera-pitch" position="0 0 0">
-          <a-entity id="camera-offset" position="0.45 -0.2 1.6">
-            <!-- CÁMARA HÍBRIDA (3ra Persona sobre el hombro por defecto, conmutable a 1ra con D-Pad) -->
+          <a-entity id="camera-offset" position="0.38 -0.05 1.15">
+            <!-- CÁMARA HÍBRIDA (3ra Persona sobre el hombro por defecto, 1ra persona pura al entrar a VR) -->
             <a-camera position="0 1.6 0" look-controls="enabled: false; magicWindowTrackingEnabled: false; pointerLockEnabled: false"
               wasd-controls="enabled: false">
-              <!-- HUD: Retícula Roja (Mira del rifle) -->
-              <a-entity position="0 0 -1">
-                <a-entity geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.01"
-                  material="color: #ff2222; shader: flat" position="0 0 0"></a-entity>
+              <!-- MIRA TÁCTICA LÁSER CON TELÉMETRO DIGITAL (LIMPIA, SIN INVENTOS NI CAPAS EXTRA) -->
+              <a-entity id="vr-dynamic-reticle" dynamic-depth-reticle position="0 0 -20">
+                <!-- Punto láser rojo limpio -->
+                <a-circle radius="0.009" material="color: #ff2222; shader: flat; transparent: true; opacity: 0.95; depthTest: false"></a-circle>
+                <!-- Telémetro digital debajo: distancia exacta estilo Action City -->
+                <a-text id="reticle-range-text" value="--m" align="center" position="0 -0.034 0" width="1.6"
+                  color="#00ffcc" font="dejavu" opacity="0.95" material="depthTest: false"></a-text>
               </a-entity>
-              <!-- HUD TÁCTICO FLOTANTE PARA VISOR VR (CENTRADO Y COMPACTO PARA NO CORTARSE EN LAS LENTES) -->
-              <a-entity id="vr-hud-tactical" position="0 0.38 -1.1">
-                <a-text id="vr-hud-timer" value="00:00" align="right" position="-0.07 0 0" width="1.6" color="#ffffff" opacity="0.75"></a-text>
-                <a-entity id="vr-target-group" position="0.04 0 0">
-                  <a-ring radius-inner="0.015" radius-outer="0.021" material="color: #00ff66; shader: flat; transparent: true; opacity: 0.7"></a-ring>
-                  <a-ring radius-inner="0.007" radius-outer="0.011" material="color: #00ff66; shader: flat; transparent: true; opacity: 0.7"></a-ring>
-                  <a-circle radius="0.003" material="color: #00ff66; shader: flat; transparent: true; opacity: 0.7"></a-circle>
-                  <a-text id="vr-hud-targets" value="50" align="left" position="0.035 0 0" width="1.6" color="#00ff66" opacity="0.75"></a-text>
+              <!-- SENSOR TÁCTICO DE 5 PUNTOS (SOLO PUNTOS: CERO FONDOS, CERO AROS) -->
+              <a-entity id="vr-radar-sensor" position="0 -0.55 -2.5" tactical-radar>
+                <!-- Punto central: Posición del jugador (Azul Táctico) -->
+                <a-circle radius="0.0085" material="color: #00bfff; shader: flat"></a-circle>
+                <!-- 4 Puntos Rojos: Las 4 posiciones enemigas relativas -->
+                <a-circle class="radar-dot" radius="0.0075" material="color: #ff2222; shader: flat" visible="false"></a-circle>
+                <a-circle class="radar-dot" radius="0.0075" material="color: #ff2222; shader: flat" visible="false"></a-circle>
+                <a-circle class="radar-dot" radius="0.0075" material="color: #ff2222; shader: flat" visible="false"></a-circle>
+                <a-circle class="radar-dot" radius="0.0075" material="color: #ff2222; shader: flat" visible="false"></a-circle>
+              </a-entity>
+              <!-- HUD TÁCTICO FLOTANTE PARA VISOR VR (PLANO FOCAL NATURAL A 2.5M) -->
+              <a-entity id="vr-hud-tactical" position="0 0.95 -2.5">
+                <a-text id="vr-hud-timer" value="00:00" align="right" position="-0.17 0 0" width="4.0" color="#ffffff" opacity="0.75"></a-text>
+                <a-entity id="vr-target-group" position="0.10 0 0">
+                  <a-ring radius-inner="0.037" radius-outer="0.052" material="color: #00ff66; shader: flat; transparent: true; opacity: 0.7"></a-ring>
+                  <a-ring radius-inner="0.017" radius-outer="0.027" material="color: #00ff66; shader: flat; transparent: true; opacity: 0.7"></a-ring>
+                  <a-circle radius="0.0075" material="color: #00ff66; shader: flat; transparent: true; opacity: 0.7"></a-circle>
+                  <a-text id="vr-hud-targets" value="50" align="left" position="0.085 0 0" width="4.0" color="#00ff66" opacity="0.75"></a-text>
                 </a-entity>
               </a-entity>
               <!-- FEEDBACK DE CALIBRACIÓN ÓPTICA VR (LENTES) -->
-              <a-text id="vr-lens-feedback" value="" position="0 0.22 -1.1" align="center" color="#00ff66" width="2.4" opacity="0.9" visible="false"></a-text>
+              <a-text id="vr-lens-feedback" value="" position="0 0.55 -2.5" align="center" color="#00ff66" width="6.0" opacity="0.9" visible="false"></a-text>
               <!-- CARTEL DE PAUSA VR -->
-              <a-entity id="vr-pause-hud" position="0 0 -1.4" visible="false">
-                <a-text value="PAUSA\n\n[START] REANUDAR" align="center" color="#ffbb00" width="3.2"></a-text>
+              <a-entity id="vr-pause-hud" position="0 0 -2.5" visible="false">
+                <a-text value="PAUSA\n\n[START] REANUDAR" align="center" color="#ffbb00" width="5.5"></a-text>
               </a-entity>
               <!-- CARTEL DE MUERTE VR -->
-              <a-text id="vr-death-text" value="ESTAS MUERTO\n\n[B] CONTINUAR  --  [A] NUEVA PARTIDA" position="0 0 -1.4" align="center" color="#ff2222" width="3.5" visible="false"></a-text>
+              <a-text id="vr-death-text" value="ESTAS MUERTO\n\n[B] CONTINUAR  --  [A] NUEVA PARTIDA" position="0 0 -2.5" align="center" color="#ff2222" width="6.0" visible="false"></a-text>
             </a-camera>
           </a-entity>
         </a-entity>

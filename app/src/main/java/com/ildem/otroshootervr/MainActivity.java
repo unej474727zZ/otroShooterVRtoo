@@ -125,7 +125,7 @@ public class MainActivity extends Activity {
         public void sendLogToPc(String jsonLogs) {
             new Thread(() -> {
                 try {
-                    java.net.URL url = new java.net.URL("http://192.168.1.103:8080/log");
+                    java.net.URL url = new java.net.URL("http://192.168.1.104:8080/log");
                     java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("POST");
                     conn.setRequestProperty("Content-Type", "application/json; utf-8");

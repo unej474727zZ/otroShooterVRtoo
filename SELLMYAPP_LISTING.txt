@@ -1,0 +1,75 @@
+================================================================================
+FICHA DE PUBLICACIÓN PARA SELLMYAPP / CODECANYON (COPIAR Y PEGAR)
+================================================================================
+
+[TITLE / TÍTULO DEL PRODUCTO]:
+VR CQB Tactical Shooter - Android Mobile VR Starter Kit with Bluetooth Gamepad Support
+
+[CATEGORY / CATEGORÍA]:
+Android / Games / Action  (O "Virtual Reality")
+
+[SUGGESTED PRICE / PRECIO RECOMENDADO]:
+- Regular License: $49 USD (o $39 en CodeCanyon)
+- Extended License: $149 USD
+
+[TAGS / PALABRAS CLAVE]:
+vr, virtual reality, cardboard, shooter, cqb, fps, tactical, bluetooth gamepad, x3 controller, aframe, threejs, webxr, android game template, low poly, military
+
+--------------------------------------------------------------------------------
+[SHORT DESCRIPTION / DESCRIPCIÓN CORTA (1-2 párrafos)]:
+--------------------------------------------------------------------------------
+VR CQB Tactical Shooter is a complete, production-ready Virtual Reality (VR) mobile game template for Android. Featuring native Bluetooth Gamepad bridge support (X3, Xbox, DualShock, generic controllers), a borderless 5-point tactical proximity radar, dynamic AI enemies with dual head/body hitboxes, and an ultra-optimized 60 FPS Low Poly 3D engine built on A-Frame and Three.js.
+
+Ready to customize, reskin, and publish to Google Play Store, Itch.io, or Amazon Appstore with full developer documentation included!
+
+--------------------------------------------------------------------------------
+[FULL DESCRIPTION (HTML) / DESCRIPCIÓN COMPLETA PARA EL FORMULARIO]:
+--------------------------------------------------------------------------------
+<h2>🚀 Overview</h2>
+<p><strong>VR CQB Tactical Shooter</strong> is an advanced, high-performance VR Mobile Starter Kit for Android. Designed specifically for Google Cardboard and mobile VR headsets, it solves the most critical challenge in mobile VR: <strong>seamless Bluetooth gamepad integration with zero input latency.</strong></p>
+
+<p>Combining the lightweight speed of Three.js / WebXR with native Android Java performance, this starter kit delivers immersive Close-Quarters Battle (CQB) tactical shooting at smooth, battery-friendly 60 FPS.</p>
+
+<h2>⭐ Key Features</h2>
+<ul>
+  <li><strong>🎮 Native Bluetooth Gamepad Bridge:</strong> Direct Java-to-JS bridge supporting X3, Ipega, Xbox, and all standard Bluetooth controllers with analog stick smooth rotation and trigger fire.</li>
+  <li><strong>📡 5-Point Tactical Proximity Radar:</strong> Diegetic, borderless VR radar. Displays player orientation in blue and tracks up to 4 closest active threats in red without HUD clutter.</li>
+  <li><strong>🤖 Dynamic Enemy AI:</strong> Wave-based enemies with Hunter and Patrol behaviors. Features a 750ms reaction grace window with weapon sound cues to prevent unfair deaths.</li>
+  <li><strong>🎯 Dual Hitbox System:</strong> Independent headshot (3x critical damage) and torso hitboxes with physical raycast projectile feedback.</li>
+  <li><strong>🔊 Spatial 3D Audio & Night Vision:</strong> Positional audio cues, footstep warnings, and glowing dual-LED night vision goggles on enemy helmets in pitch darkness.</li>
+  <li><strong>⚡ 60 FPS Mobile Optimization:</strong> Compressed WebP textures, low-draw-call GLB assets, and shader pre-warming to eliminate VR stuttering on Android.</li>
+  <li><strong>📖 Comprehensive Documentation:</strong> Step-by-step HTML guide on how to build, reskin, modify weapon ammo, add levels, and change package IDs in Android Studio.</li>
+</ul>
+
+<h2>📦 What's Included in the Package</h2>
+<ul>
+  <li><strong>Full Android Studio Source Code:</strong> Clean, unbloated project ready to import.</li>
+  <li><strong>Ready-to-Test Demo APK:</strong> Pre-compiled APK to test immediately on your phone.</li>
+  <li><strong>Offline HTML Documentation:</strong> Detailed customization guide with diagrams and code snippets.</li>
+  <li><strong>All 3D Low Poly Assets:</strong> M4A1 rifle, industrial killhouse building, and animated soldier rigs.</li>
+</ul>
+
+<h2>⚙️ Technical Requirements</h2>
+<ul>
+  <li>Android Studio Hedgehog / Iguana / Ladybug or newer.</li>
+  <li>Android SDK 24+ (Android 7.0 Nougat to Android 14+).</li>
+  <li>Smartphone with Gyroscope & Bluetooth gamepad (Optional: VR Cardboard headset).</li>
+</ul>
+
+--------------------------------------------------------------------------------
+[PASOS PARA SUBIRLO A SELLMYAPP]:
+--------------------------------------------------------------------------------
+1. Abre tu navegador y entra en: https://www.sellmyapp.com
+2. Haz clic en "Sell your app" o "Become an author" (arriba a la derecha).
+3. Regístrate o inicia sesión con tu correo.
+4. En tu panel de vendedor (Vendor Dashboard), haz clic en "Add New Item" / "Submit Product".
+5. Copia y pega el Título y la Descripción de arriba.
+6. En "Files to Upload":
+   - Sube el archivo ZIP ya generado:
+     d:\otroShooter\VR_CQB_Shooter_SellMyApp_Package.zip
+7. En "Product Images":
+   - Header Banner: d:\otroShooter\Marketplace_Assets\header_banner.jpg
+   - App Icon: d:\otroShooter\Marketplace_Assets\app_icon.jpg
+8. Fija el precio ($49 USD recomendado).
+9. ¡Haz clic en "Submit for Review"! El equipo de SellMyApp lo revisará en 2 a 4 días laborables y lo publicará a la venta.
+================================================================================
