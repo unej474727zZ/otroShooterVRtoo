@@ -174,6 +174,8 @@ public class MainActivity extends Activity {
         settings.setAllowContentAccess(true);
         settings.setAllowFileAccessFromFileURLs(true);
         settings.setAllowUniversalAccessFromFileURLs(true);
+        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webView.clearCache(true);
 
         // Esto permite la aceleración gráfica de WebGL
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);

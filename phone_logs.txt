@@ -1342,3 +1342,138 @@
 [6:07:16 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
 [6:07:17 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
 [6:07:17 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+
+================ LOGS RECIBIDOS (16/10/2026, 6:37:12 p. m.) ================
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.95s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=1.11s
+[6:35:16 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[6:35:16 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=1.59s
+[6:35:16 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[6:35:17 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[6:35:17 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[6:35:17 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[6:35:17 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[6:36:40 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[6:36:53 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[6:36:53 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[6:36:53 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[6:36:53 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+
+================ LOGS RECIBIDOS (16/10/2026, 6:37:14 p. m.) ================
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.95s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=1.11s
+[6:35:16 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[6:35:16 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=1.59s
+[6:35:16 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[6:35:17 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[6:35:17 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[6:35:17 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[6:35:17 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[6:36:40 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[6:36:53 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[6:36:53 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[6:36:53 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[6:36:53 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[6:37:10 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+
+================ LOGS RECIBIDOS (16/10/2026, 6:37:57 p. m.) ================
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.95s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=1.11s
+[6:35:15 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=1.11s
+[6:35:16 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[6:35:16 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=1.59s
+[6:35:16 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[6:35:17 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[6:35:17 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[6:35:17 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[6:35:17 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[6:36:40 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[6:36:53 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[6:36:53 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[6:36:53 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[6:36:53 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[6:37:10 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+[6:37:12 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+
+================ LOGS RECIBIDOS (16/10/2026, 7:10:29 p. m.) ================
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.52s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.63s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.71s
+[7:10:10 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[7:10:10 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=0.90s
+[7:10:10 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[7:10:11 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[7:10:11 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[7:10:11 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[7:10:11 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[7:10:22 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[7:10:22 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[7:10:22 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[7:10:22 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+
+================ LOGS RECIBIDOS (16/10/2026, 7:10:30 p. m.) ================
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.52s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.63s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.71s
+[7:10:10 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[7:10:10 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=0.90s
+[7:10:10 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[7:10:11 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[7:10:11 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[7:10:11 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[7:10:11 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[7:10:22 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[7:10:22 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[7:10:22 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[7:10:22 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[7:10:27 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+
+================ LOGS RECIBIDOS (16/10/2026, 7:10:30 p. m.) ================
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.52s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.63s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.71s
+[7:10:10 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.71s
+[7:10:10 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[7:10:10 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=0.90s
+[7:10:10 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[7:10:11 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[7:10:11 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[7:10:11 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[7:10:11 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[7:10:22 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[7:10:22 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[7:10:22 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[7:10:22 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[7:10:27 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+[7:10:28 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT

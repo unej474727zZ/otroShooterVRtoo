@@ -281,15 +281,6 @@
                 avatar.setAttribute('visible', 'false');
                 if (avatar.object3D) avatar.object3D.visible = false;
               }
-              // Anclar elementos flotantes del HUD y mira directamente a camera3D para seguimiento óptico 1:1 con el giroscopio
-              if (cam3D) {
-                ['vr-hud-tactical', 'vr-radar-sensor', 'vr-dynamic-reticle', 'vr-pause-hud', 'vr-death-text', 'vr-lens-feedback'].forEach(function (id) {
-                  var el = document.getElementById(id);
-                  if (el && el.object3D && el.object3D.parent !== cam3D) {
-                    cam3D.add(el.object3D);
-                  }
-                });
-              }
               window.isFirstPerson = true;
               console.log('[VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0');
             } else {
@@ -1836,7 +1827,6 @@
         this.cameraEl = this.el.closest('a-camera') || document.querySelector('a-camera');
         this.maxRange = 26; // Rango de detección en metros
         this.radarRadius = 0.1125; // Escala adaptada para distancia Z = -2.5
-        this.attachedToCam = false;
       },
       tick: function () {
         if (!this.cameraEl) {
@@ -1846,14 +1836,6 @@
 
         var camera3D = this.cameraEl.getObject3D('camera');
         if (!camera3D) return;
-
-        // Asegurar anclaje a camera3D para rotar junto al giroscopio de la cabeza en VR
-        if (!this.attachedToCam) {
-          camera3D.add(this.el.object3D);
-          this.attachedToCam = true;
-        }
-        this.el.object3D.position.set(0, -0.55, -2.5);
-        this.el.object3D.rotation.set(0, 0, 0);
 
         var scene = this.el.sceneEl;
         var npcMgr = scene && scene.components['npc-manager'];
@@ -1928,12 +1910,12 @@
     });
 
     // RETÍCULA HOLOGRÁFICA VR CON PROFUNDIDAD DINÁMICA Y TELÉMETRO LÁSER DIGITAL
-    // Punto láser ultra-fino y preciso con telémetro continuo, sin aros negros y sin fatiga ocular.
+    // Punto láser ultra-fino, limpio y preciso con telémetro continuo y descanso óptico natural
     AFRAME.registerComponent('dynamic-depth-reticle', {
       schema: {
-        maxDist: { default: 30.0 },
-        minDist: { default: 1.0 },
-        defaultDist: { default: 2.8 } // Distancia focal óptica de descanso natural (2.8m)
+        maxDist: { default: 28.0 },
+        minDist: { default: 1.2 },
+        defaultDist: { default: 2.5 } // Descanso focal en la distancia natural de lentes VR (2.5m)
       },
       init: function () {
         this.raycaster = new THREE.Raycaster();
@@ -1941,34 +1923,51 @@
         this.direction = new THREE.Vector3();
         this.currentDist = 2.5;
         this.targetDist = 2.5;
+        this.rayHitDist = 2.5;
+        this.hasHit = false;
         this.lastRayTime = 0;
         this.lastTextTime = 0;
-        this.attachedToCam = false;
         this.cameraEl = this.el.closest('a-camera') || document.querySelector('a-camera');
         this.avatarEl = document.getElementById('avatar-container');
         this.rangeTextEl = document.getElementById('reticle-range-text');
         this._lastTextVal = '';
 
-        // Configurar materiales del círculo una sola vez para profundidad prioritaria
-        var circle = this.el.querySelector('a-circle');
-        if (circle) {
-          var setupCircleMat = function () {
-            var mesh = circle.getObject3D('mesh');
+        // CREAR EL PUNTO LÁSER NATIVO DIRECTAMENTE EN THREE.JS (FIJACIÓN 100% GARANTIZADA Y CERO DESPRENDIMIENTOS)
+        // Radio 0.022m: Con escala angular adaptativa, siempre mide exactamente ~8px en pantalla (nítido, limpio, nunca gigante)
+        var dotGeo = new THREE.CircleGeometry(0.022, 16);
+        var dotMat = new THREE.MeshBasicMaterial({
+          color: 0xff1818, // Rojo láser táctico limpio
+          depthTest: false,
+          depthWrite: false,
+          transparent: true,
+          opacity: 1.0,
+          side: THREE.DoubleSide
+        });
+        this.dotMesh = new THREE.Mesh(dotGeo, dotMat);
+        this.dotMesh.name = 'laserDotMesh';
+        this.dotMesh.position.set(0, 0, 0.001);
+        this.dotMesh.renderOrder = 99999;
+        this.el.object3D.add(this.dotMesh);
+
+        var self = this;
+        if (this.rangeTextEl) {
+          var setupText = function () {
+            var mesh = self.rangeTextEl.getObject3D('mesh');
             if (mesh && mesh.material) {
               mesh.material.depthTest = false;
               mesh.material.depthWrite = false;
-              mesh.material.transparent = true;
-              mesh.material.side = THREE.DoubleSide;
               mesh.renderOrder = 99999;
               mesh.material.needsUpdate = true;
             }
           };
-          circle.addEventListener('loaded', setupCircleMat);
-          setupCircleMat();
+          this.rangeTextEl.addEventListener('textfontset', setupText);
+          this.rangeTextEl.addEventListener('loaded', setupText);
+          setupText();
         }
       },
       isIgnored: function (obj) {
         if (!obj) return true;
+        if (this.dotMesh && obj === this.dotMesh) return true;
         if (!obj.visible) {
           var isNpcHitbox = obj.el && (obj.el.classList.contains('npc-body') || obj.el.classList.contains('npc-head'));
           if (isNpcHitbox) {
@@ -1984,7 +1983,7 @@
           return true;
         }
         if (obj.type !== 'Mesh' && obj.type !== 'SkinnedMesh') return true;
-        if (obj.name && (obj.name.includes('Line') || obj.name.includes('tracer') || obj.name.includes('hole'))) return true;
+        if (obj.name && (obj.name.includes('Line') || obj.name.includes('tracer') || obj.name.includes('hole') || obj.name.includes('laserDot'))) return true;
 
         var curr = obj;
         while (curr) {
@@ -2000,63 +1999,65 @@
           this.cameraEl = this.el.closest('a-camera') || document.querySelector('a-camera');
           if (!this.cameraEl) return;
         }
-        var camera3D = this.cameraEl.getObject3D('camera');
-        if (!camera3D) return;
 
-        // Anclar a camera3D para orientación 1:1 sin desfase en VR
-        if (!this.attachedToCam) {
-          camera3D.add(this.el.object3D);
-          this.attachedToCam = true;
-        }
-
-        // Raycasting cada ~35ms
-        if (time - this.lastRayTime > 35) {
+        // Raycasting cada ~40ms para excelente rendimiento
+        if (time - this.lastRayTime > 40) {
           this.lastRayTime = time;
-          this.updateTargetDist(camera3D);
+          this.updateTargetDist();
         }
 
         // Suavizado cinemático fluido (Lerp a 60-90 FPS)
         var dt = delta ? Math.min(delta, 100) : 16.6;
-        var lerpFactor = Math.min(1.0, 0.42 * (dt / 16.666));
+        var lerpFactor = Math.min(1.0, 0.35 * (dt / 16.666));
         this.currentDist += (this.targetDist - this.currentDist) * lerpFactor;
 
         // Posicionar directamente a lo largo del eje focal central de la cámara
         this.el.object3D.position.set(0, 0, -this.currentDist);
         this.el.object3D.rotation.set(0, 0, 0);
 
-        // Escala controlada y sutil: mantiene el punto fino, nítido y sin deformaciones
-        var s = Math.min(1.25, Math.max(0.75, Math.pow(this.currentDist / 2.5, 0.45)));
+        // Escala con relación de perspectiva angular constante:
+        // Mantiene el punto láser con un tamaño angular constante y nítido (nunca gigante, nunca invisible)
+        var s = Math.max(0.4, Math.min(8.0, this.currentDist / 2.5));
         this.el.object3D.scale.set(s, s, s);
 
-        // Actualizar telémetro láser digital (distancia exacta permanentemente visible)
+        // Actualizar telémetro láser digital (distancia exacta siempre visible)
         if (!this.rangeTextEl) this.rangeTextEl = document.getElementById('reticle-range-text');
-        if (this.rangeTextEl && (time - this.lastTextTime > 50)) {
+        if (this.rangeTextEl && (time - this.lastTextTime > 60)) {
           this.lastTextTime = time;
-          var d = this.currentDist;
+          var d = this.hasHit ? this.rayHitDist : this.currentDist;
           var txt = '';
           var col = '#00ffcc';
-          if (d >= 20.0) {
-            txt = '>20m';
-            col = '#7799aa'; // Color tenue horizonte / cielo
+          if (!this.hasHit || d >= 25.0) {
+            txt = '>25m';
+            col = '#7799aa'; // Tenue horizonte lejano
           } else if (d < 3.0) {
             txt = d.toFixed(1) + 'm';
-            col = '#ff3344'; // Alerta roja proximidad CQB / peligro cuerpo a cuerpo
+            col = '#ff4444'; // Alerta roja proximidad CQB
           } else {
             txt = d.toFixed(1) + 'm';
             col = '#00ffcc'; // Verde-cian táctico
           }
 
-          var textMesh = this.rangeTextEl.getObject3D('mesh');
-          if (this._lastTextVal !== txt || !textMesh) {
+          if (this._lastTextVal !== txt) {
             this.rangeTextEl.setAttribute('value', txt);
             this.rangeTextEl.setAttribute('color', col);
-            if (textMesh) this._lastTextVal = txt;
+            this._lastTextVal = txt;
           }
         }
       },
-      updateTargetDist: function (camera3D) {
-        camera3D.getWorldPosition(this.origin);
-        this.direction.set(0, 0, -1).transformDirection(camera3D.matrixWorld);
+      updateTargetDist: function () {
+        var camera3D = this.cameraEl ? this.cameraEl.getObject3D('camera') : null;
+        if (camera3D) {
+          camera3D.getWorldPosition(this.origin);
+          this.direction.set(0, 0, -1).transformDirection(camera3D.matrixWorld);
+        } else if (this.cameraEl && this.cameraEl.object3D) {
+          this.cameraEl.object3D.getWorldPosition(this.origin);
+          var quat = new THREE.Quaternion();
+          this.cameraEl.object3D.getWorldQuaternion(quat);
+          this.direction.set(0, 0, -1).applyQuaternion(quat);
+        } else {
+          return;
+        }
 
         this.raycaster.set(this.origin, this.direction);
         this.raycaster.far = this.data.maxDist;
@@ -2086,10 +2087,14 @@
         }
 
         if (foundHit) {
+          this.hasHit = true;
+          this.rayHitDist = foundHit.distance;
           // Separación limpia frente a la superficie impactada
-          this.targetDist = Math.max(this.data.minDist, foundHit.distance - 0.05);
+          this.targetDist = Math.max(this.data.minDist, Math.min(this.data.maxDist, foundHit.distance - 0.05));
         } else {
-          // Descanso ocular en plano focal óptico natural (2.8m, cero bizqueo)
+          this.hasHit = false;
+          this.rayHitDist = 999;
+          // Descanso ocular en plano focal óptico natural (2.5m, cero fatiga/bizqueo)
           this.targetDist = this.data.defaultDist;
         }
       }
@@ -3365,13 +3370,11 @@
             <!-- CÁMARA HÍBRIDA (3ra Persona sobre el hombro por defecto, 1ra persona pura al entrar a VR) -->
             <a-camera position="0 1.6 0" look-controls="enabled: false; magicWindowTrackingEnabled: false; pointerLockEnabled: false"
               wasd-controls="enabled: false">
-              <!-- MIRA TÁCTICA LÁSER CON TELÉMETRO DIGITAL -->
+              <!-- MIRA TÁCTICA LÁSER CON TELÉMETRO DIGITAL (PUNTO ROJO NÍTIDO Y TELÉMETRO PERMANENTE) -->
               <a-entity id="vr-dynamic-reticle" dynamic-depth-reticle position="0 0 -2.5">
-                <!-- Punto láser rojo ultra fino, limpio y preciso (sin aros ni marcos) -->
-                <a-circle radius="0.007" material="color: #ff1111; shader: flat; side: double; depthTest: false; transparent: true; opacity: 1.0" position="0 0 0.001"></a-circle>
-                <!-- Telémetro digital debajo: distancia exacta continua -->
-                <a-text id="reticle-range-text" value="2.5m" align="center" position="0 -0.026 0" width="1.3"
-                  color="#00ffcc" font="dejavu" opacity="0.95" material="depthTest: false"></a-text>
+                <!-- Telémetro digital continuo: distancia permanentemente visible debajo del punto láser -->
+                <a-text id="reticle-range-text" value="2.5m" align="center" position="0 -0.048 0" width="1.6"
+                  color="#00ffcc" opacity="0.95"></a-text>
               </a-entity>
               <!-- SENSOR TÁCTICO DE 5 PUNTOS (SOLO PUNTOS: CERO FONDOS, CERO AROS) -->
               <a-entity id="vr-radar-sensor" position="0 -0.55 -2.5" tactical-radar>
