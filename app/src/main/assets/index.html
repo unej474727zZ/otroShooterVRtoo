@@ -263,16 +263,39 @@
       AFRAME.registerComponent('vr-camera-fix', {
         init: function () {
           var scene = this.el;
-          scene.addEventListener('enter-vr', function () {
+          var self = this;
+          this.applyVR = function (isVR) {
             var offset = document.getElementById('camera-offset');
-            if (offset) offset.setAttribute('position', '0 0 0');
-            var pitchWrapper = document.getElementById('camera-pitch');
-            if (pitchWrapper) pitchWrapper.object3D.rotation.set(0, 0, 0); // Horizonte nivelado a cero
             var avatar = document.getElementById('avatar-container');
-            if (avatar) avatar.setAttribute('visible', 'false'); // Ocultar avatar solo en VR para rendimiento y sincronización óptica
-            window.isFirstPerson = true;
+            var pitchWrapper = document.getElementById('camera-pitch');
+            if (isVR) {
+              if (offset) {
+                offset.setAttribute('position', '0 0 0');
+                if (offset.object3D) offset.object3D.position.set(0, 0, 0);
+              }
+              if (pitchWrapper && pitchWrapper.object3D) pitchWrapper.object3D.rotation.set(0, 0, 0);
+              if (avatar) {
+                avatar.setAttribute('visible', 'false');
+                if (avatar.object3D) avatar.object3D.visible = false;
+              }
+              window.isFirstPerson = true;
+              console.log('[VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0');
+            } else {
+              if (!window.isFirstPerson) {
+                if (offset) {
+                  offset.setAttribute('position', '0.38 -0.05 1.15');
+                  if (offset.object3D) offset.object3D.position.set(0.38, -0.05, 1.15);
+                }
+                if (avatar) {
+                  avatar.setAttribute('visible', 'true');
+                  if (avatar.object3D) avatar.object3D.visible = true;
+                }
+              }
+            }
+          };
 
-            // Actualizar dimensiones inmediatamente al entrar a VR
+          scene.addEventListener('enter-vr', function () {
+            self.applyVR(true);
             setTimeout(function () {
               if (scene.renderer) {
                 scene.renderer.setSize(window.innerWidth, window.innerHeight, false);
@@ -280,12 +303,24 @@
             }, 100);
           });
           scene.addEventListener('exit-vr', function () {
-            var offset = document.getElementById('camera-offset');
-            if (offset) offset.setAttribute('position', '0.38 -0.05 1.15');
-            var avatar = document.getElementById('avatar-container');
-            if (avatar) avatar.setAttribute('visible', 'true'); // Restaurar avatar en modo pantalla 3D
-            window.isFirstPerson = false;
+            self.applyVR(false);
           });
+        },
+        tick: function () {
+          // Bloqueo continuo estricto: En modo VR el avatar NUNCA puede ser visible y la cámara NUNCA puede tener desfase
+          var scene = this.el;
+          if (scene && scene.is('vr-mode')) {
+            var avatar = document.getElementById('avatar-container');
+            if (avatar && (avatar.getAttribute('visible') !== 'false' || (avatar.object3D && avatar.object3D.visible))) {
+              avatar.setAttribute('visible', 'false');
+              if (avatar.object3D) avatar.object3D.visible = false;
+            }
+            var offset = document.getElementById('camera-offset');
+            if (offset && offset.object3D && (offset.object3D.position.x !== 0 || offset.object3D.position.z !== 0)) {
+              offset.setAttribute('position', '0 0 0');
+              offset.object3D.position.set(0, 0, 0);
+            }
+          }
         }
       });
 
@@ -436,6 +471,37 @@
             gain.connect(this.ctx.destination);
             osc.start();
             osc.stop(this.ctx.currentTime + 0.08);
+          } catch (e) { }
+        },
+        playHeartbeat: function (intensity) {
+          try {
+            this.init();
+            if (!this.ctx) return;
+            var t = this.ctx.currentTime;
+            var gain = this.ctx.createGain();
+            var osc = this.ctx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(80, t);
+            osc.frequency.exponentialRampToValueAtTime(32, t + 0.11);
+            var vol = Math.min(0.7, 0.22 + (intensity || 0.5) * 0.45);
+            gain.gain.setValueAtTime(vol, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.11);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.12);
+
+            var osc2 = this.ctx.createOscillator();
+            var gain2 = this.ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(65, t + 0.15);
+            osc2.frequency.exponentialRampToValueAtTime(28, t + 0.25);
+            gain2.gain.setValueAtTime(vol * 0.65, t + 0.15);
+            gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+            osc2.connect(gain2);
+            gain2.connect(this.ctx.destination);
+            osc2.start(t + 0.15);
+            osc2.stop(t + 0.26);
           } catch (e) { }
         }
       };
@@ -969,16 +1035,22 @@
     // Alternar entre 1ª Persona (FPS) y 3ª Persona (Sobre el hombro con avatar)
     window.isFirstPerson = false; // Por defecto en pantalla 3D normal: 3ra persona con avatar visible
     window.togglePerspective = function () {
+      var scene = document.querySelector('a-scene');
+      if (scene && scene.is('vr-mode')) {
+        // En modo VR la vista se mantiene estrictamente en 1ª persona centrada en (0,0,0) sin avatar
+        window.isFirstPerson = true;
+        return;
+      }
       window.isFirstPerson = !window.isFirstPerson;
       var avatar = document.getElementById('avatar-container');
       var offset = document.getElementById('camera-offset');
       if (window.isFirstPerson) {
-        if (avatar) avatar.setAttribute('visible', 'false');
-        if (offset) offset.setAttribute('position', '0 0 0');
+        if (avatar) { avatar.setAttribute('visible', 'false'); if (avatar.object3D) avatar.object3D.visible = false; }
+        if (offset) { offset.setAttribute('position', '0 0 0'); if (offset.object3D) offset.object3D.position.set(0, 0, 0); }
         console.log('[CAM] Perspectiva: 1ª Persona (FPS)');
       } else {
-        if (avatar) avatar.setAttribute('visible', 'true');
-        if (offset) offset.setAttribute('position', '0.38 -0.05 1.15');
+        if (avatar) { avatar.setAttribute('visible', 'true'); if (avatar.object3D) avatar.object3D.visible = true; }
+        if (offset) { offset.setAttribute('position', '0.38 -0.05 1.15'); if (offset.object3D) offset.object3D.position.set(0.38, -0.05, 1.15); }
         console.log('[CAM] Perspectiva: 3ª Persona (Sobre el hombro)');
       }
     };
@@ -1320,6 +1392,10 @@
         this.totalKilled = 0;
         this.activeCount = 4; // EXACTAMENTE 4 ENEMIGOS TOTALES (2 Cazadores + 2 Patrulleros)
         this.npcs = [];
+        this.player = document.querySelector('#rig');
+        this.lastHeartbeatTime = 0;
+        this.enemyStepsAudio = new Audio('step.mp3');
+        this.enemyStepsAudio.loop = true;
 
         // Pre-cargar textura de armadura compartida
         if (!window._npcArmorTexture) {
@@ -1505,6 +1581,61 @@
             npc.components['npc-ai'].respawn('patrol');
           }
         }, 4000);
+      },
+      tick: function (time, delta) {
+        if (window.gamePaused) {
+          if (this.enemyStepsAudio && !this.enemyStepsAudio.paused) this.enemyStepsAudio.pause();
+          return;
+        }
+        if (!this.player) this.player = document.querySelector('#rig');
+        if (!this.player || !this.player.object3D) return;
+
+        var pPos = this.player.object3D.position;
+        var minMovingDist = Infinity;
+        var minAnyDist = Infinity;
+
+        for (var i = 0; i < this.npcs.length; i++) {
+          var npc = this.npcs[i];
+          if (!npc || !npc.object3D || !npc.object3D.visible) continue;
+          var ai = npc.components['npc-ai'];
+          if (!ai || ai.state === 'die') continue;
+
+          var d = npc.object3D.position.distanceTo(pPos);
+          if (d < minAnyDist) minAnyDist = d;
+
+          // Si el enemigo está moviéndose (persiguiendo o patrullando)
+          if (ai.state === 'seek' || ai.state === 'walk') {
+            if (d < minMovingDist) minMovingDist = d;
+          }
+        }
+
+        // 1. PASOS DEL ENEMIGO: Suenan progresivamente más duro a medida que se acerca (de 18m a 1m)
+        if (minMovingDist < 18.0) {
+          var norm = Math.max(0, (18.0 - minMovingDist) / 16.5);
+          var vol = Math.min(0.9, norm * norm * 0.95);
+          if (this.enemyStepsAudio) {
+            this.enemyStepsAudio.volume = vol;
+            if (this.enemyStepsAudio.paused && vol > 0.03) {
+              this.enemyStepsAudio.play().catch(function () {});
+            }
+          }
+        } else {
+          if (this.enemyStepsAudio && !this.enemyStepsAudio.paused) {
+            this.enemyStepsAudio.pause();
+          }
+        }
+
+        // 2. SONIDO TÁCTICO DE PROXIMIDAD / LATIDO CARDÍACO: Se acelera e intensifica a menos de 14m
+        if (minAnyDist < 14.0) {
+          var rateMs = 380 + (minAnyDist / 14.0) * 1100;
+          if (time - this.lastHeartbeatTime > rateMs) {
+            this.lastHeartbeatTime = time;
+            if (window.AudioFX && window.AudioFX.playHeartbeat) {
+              var intensity = (14.0 - minAnyDist) / 14.0;
+              window.AudioFX.playHeartbeat(intensity);
+            }
+          }
+        }
       }
     });
 
@@ -1769,8 +1900,8 @@
         this.raycaster = new THREE.Raycaster();
         this.origin = new THREE.Vector3();
         this.direction = new THREE.Vector3();
-        this.currentDist = 20.0;
-        this.targetDist = 20.0;
+        this.currentDist = 2.5;
+        this.targetDist = 2.5;
         this.lastRayTime = 0;
         this.lastTextTime = 0;
         this.materialsConfigured = false;
@@ -1842,9 +1973,7 @@
         this.el.object3D.position.set(0, 0, -this.currentDist);
 
         // Escala con ligera curva de perspectiva (respiración óptica no lineal):
-        // En distancias cortas (1-3m) el punto se hace más compacto y nítido.
-        // En distancias largas (15-30m) se abre suavemente dando sensación física de lejanía y apertura del haz.
-        var s = Math.pow(this.currentDist / 2.5, 0.88);
+        var s = Math.max(0.65, Math.pow(this.currentDist / 2.5, 0.88));
         this.el.object3D.scale.set(s, s, s);
 
         // Actualizar telémetro láser digital (distancia exacta en metros estilo Action City)
@@ -2039,8 +2168,19 @@
 
         var hit = null;
         var hitEl = null;
+        var avatarEl = document.getElementById('avatar-container');
         for (var i = 0; i < intersects.length; i++) {
           var obj = intersects[i].object;
+
+          // Ignorar de inmediato todo lo que pertenezca a la cámara (la mira, HUD, radar) o al avatar
+          var curr = obj;
+          var shouldIgnore = false;
+          while (curr) {
+            if (cameraEl && curr === cameraEl.object3D) { shouldIgnore = true; break; }
+            if (avatarEl && curr === avatarEl.object3D) { shouldIgnore = true; break; }
+            curr = curr.parent;
+          }
+          if (shouldIgnore) continue;
 
           var el = obj.el;
           if (!el) {
@@ -2051,9 +2191,8 @@
 
           var isTarget = el && (el.classList.contains('cqb-target') || (el.closest && el.closest('.cqb-target')));
           var isHitbox = el && (el.classList.contains('npc-body') || el.classList.contains('npc-head') || isTarget);
-          var isAvatar = el && el.id === 'avatar-container';
 
-          if ((obj.visible || isHitbox) && obj.type === "Mesh" && !obj.name.includes('Line') && !isAvatar) {
+          if ((obj.visible || isHitbox) && obj.type === "Mesh" && !obj.name.includes('Line')) {
             hit = intersects[i];
             hitEl = el;
             break;
@@ -2691,7 +2830,7 @@
         var isIdle = !isWalking && !isWalkingBack && !isRunning && !isProne && !isJump && !isFiringIdle;
 
         var avatarCont = document.getElementById('avatar-container');
-        if (!avatarCont || avatarCont.getAttribute('visible') === 'false' || (avatarCont.object3D && !avatarCont.object3D.visible)) return; // Ahorro total de CPU en VR al estar oculto el avatar
+        if (!avatarCont || !avatarCont.object3D || !avatarCont.object3D.visible || (this.el.sceneEl && this.el.sceneEl.is('vr-mode'))) return; // Ahorro total de CPU en VR al estar oculto el avatar
         var idleEl = document.querySelector('#model-idle');
         if (!idleEl) return; // Optimización instantánea: no hay avatar del jugador, omitir animaciones
         var walkEl = document.querySelector('#model-walk');
@@ -3169,12 +3308,12 @@
             <!-- CÁMARA HÍBRIDA (3ra Persona sobre el hombro por defecto, 1ra persona pura al entrar a VR) -->
             <a-camera position="0 1.6 0" look-controls="enabled: false; magicWindowTrackingEnabled: false; pointerLockEnabled: false"
               wasd-controls="enabled: false">
-              <!-- MIRA TÁCTICA LÁSER CON TELÉMETRO DIGITAL (LIMPIA, SIN INVENTOS NI CAPAS EXTRA) -->
-              <a-entity id="vr-dynamic-reticle" dynamic-depth-reticle position="0 0 -20">
-                <!-- Punto láser rojo limpio -->
-                <a-circle radius="0.009" material="color: #ff2222; shader: flat; transparent: true; opacity: 0.95; depthTest: false"></a-circle>
+              <!-- MIRA TÁCTICA LÁSER CON TELÉMETRO DIGITAL (PUNTO ROJO VISIBLE Y TELÉMETRO) -->
+              <a-entity id="vr-dynamic-reticle" dynamic-depth-reticle position="0 0 -2.5">
+                <!-- Punto láser rojo limpio, visible, nítido y de tamaño óptimo -->
+                <a-circle radius="0.026" material="color: #ff1111; shader: flat; side: double; depthTest: false; transparent: true; opacity: 1.0" position="0 0 0.001"></a-circle>
                 <!-- Telémetro digital debajo: distancia exacta estilo Action City -->
-                <a-text id="reticle-range-text" value="--m" align="center" position="0 -0.034 0" width="1.6"
+                <a-text id="reticle-range-text" value="--m" align="center" position="0 -0.045 0" width="1.6"
                   color="#00ffcc" font="dejavu" opacity="0.95" material="depthTest: false"></a-text>
               </a-entity>
               <!-- SENSOR TÁCTICO DE 5 PUNTOS (SOLO PUNTOS: CERO FONDOS, CERO AROS) -->
