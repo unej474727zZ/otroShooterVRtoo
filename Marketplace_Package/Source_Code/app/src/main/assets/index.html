@@ -268,6 +268,9 @@
             var offset = document.getElementById('camera-offset');
             var avatar = document.getElementById('avatar-container');
             var pitchWrapper = document.getElementById('camera-pitch');
+            var cameraEl = document.querySelector('a-camera');
+            var cam3D = cameraEl ? cameraEl.getObject3D('camera') : null;
+
             if (isVR) {
               if (offset) {
                 offset.setAttribute('position', '0 0 0');
@@ -277,6 +280,15 @@
               if (avatar) {
                 avatar.setAttribute('visible', 'false');
                 if (avatar.object3D) avatar.object3D.visible = false;
+              }
+              // Anclar elementos flotantes del HUD y mira directamente a camera3D para seguimiento óptico 1:1 con el giroscopio
+              if (cam3D) {
+                ['vr-hud-tactical', 'vr-radar-sensor', 'vr-dynamic-reticle', 'vr-pause-hud', 'vr-death-text', 'vr-lens-feedback'].forEach(function (id) {
+                  var el = document.getElementById(id);
+                  if (el && el.object3D && el.object3D.parent !== cam3D) {
+                    cam3D.add(el.object3D);
+                  }
+                });
               }
               window.isFirstPerson = true;
               console.log('[VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0');
@@ -297,7 +309,7 @@
           scene.addEventListener('enter-vr', function () {
             self.applyVR(true);
             setTimeout(function () {
-              if (scene.renderer) {
+              if (scene.renderer && !scene.is('vr-mode')) {
                 scene.renderer.setSize(window.innerWidth, window.innerHeight, false);
               }
             }, 100);
@@ -1818,21 +1830,30 @@
     AFRAME.registerComponent('tactical-radar', {
       init: function () {
         this.dots = Array.from(this.el.querySelectorAll('.radar-dot'));
-        this.lastUpdate = 0;
         this.tempVec = new THREE.Vector3();
-        this.yawEl = document.querySelector('#camera-yaw');
+        this.camPos = new THREE.Vector3();
+        this.camForward = new THREE.Vector3();
+        this.cameraEl = this.el.closest('a-camera') || document.querySelector('a-camera');
         this.maxRange = 26; // Rango de detección en metros
         this.radarRadius = 0.1125; // Escala adaptada para distancia Z = -2.5
+        this.attachedToCam = false;
       },
-      tick: function (time) {
-        // Actualiza cada 90ms: ultra liviano en CPU móvil
-        if (time - this.lastUpdate < 90) return;
-        this.lastUpdate = time;
-
-        if (!this.yawEl) {
-          this.yawEl = document.querySelector('#camera-yaw');
-          if (!this.yawEl) return;
+      tick: function () {
+        if (!this.cameraEl) {
+          this.cameraEl = this.el.closest('a-camera') || document.querySelector('a-camera');
+          if (!this.cameraEl) return;
         }
+
+        var camera3D = this.cameraEl.getObject3D('camera');
+        if (!camera3D) return;
+
+        // Asegurar anclaje a camera3D para rotar junto al giroscopio de la cabeza en VR
+        if (!this.attachedToCam) {
+          camera3D.add(this.el.object3D);
+          this.attachedToCam = true;
+        }
+        this.el.object3D.position.set(0, -0.55, -2.5);
+        this.el.object3D.rotation.set(0, 0, 0);
 
         var scene = this.el.sceneEl;
         var npcMgr = scene && scene.components['npc-manager'];
@@ -1845,8 +1866,23 @@
           return;
         }
 
+        // Obtener posición y vector de orientación real de la cabeza (giroscopio + palanca combinados)
+        camera3D.getWorldPosition(this.camPos);
+        this.camForward.set(0, 0, -1).transformDirection(camera3D.matrixWorld);
+
+        // Proyección horizontal pura en el plano X-Z (sin deformación al mirar arriba/abajo)
+        var fX = this.camForward.x;
+        var fZ = this.camForward.z;
+        var fLen = Math.sqrt(fX * fX + fZ * fZ) || 1;
+        fX /= fLen;
+        fZ /= fLen;
+
+        // Vector perpendicular hacia la derecha relativa de la mirada
+        var rX = -fZ;
+        var rZ = fX;
+
         var tempVec = this.tempVec;
-        var yawObj = this.yawEl.object3D;
+        var camPos = this.camPos;
         var maxR = this.maxRange;
         var radR = this.radarRadius;
 
@@ -1867,19 +1903,22 @@
           }
 
           npc.object3D.getWorldPosition(tempVec);
-          yawObj.worldToLocal(tempVec);
+          var dx = tempVec.x - camPos.x;
+          var dz = tempVec.z - camPos.z;
 
-          // tempVec.x: derecha (+), izquierda (-)
-          // -tempVec.z: adelante (+), atrás (-)
-          var dist = Math.sqrt(tempVec.x * tempVec.x + tempVec.z * tempVec.z);
+          var dist = Math.sqrt(dx * dx + dz * dz);
           if (dist > maxR) {
             dot.setAttribute('visible', false);
             continue;
           }
 
+          // Componente adelante/atrás y derecha/izquierda relativo hacia donde apunta la cabeza
+          var relForward = dx * fX + dz * fZ;
+          var relRight = dx * rX + dz * rZ;
+
           var scale = (dist / maxR) * radR;
-          var nx = tempVec.x / (dist || 1);
-          var nz = -tempVec.z / (dist || 1);
+          var nx = relRight / (dist || 1);
+          var nz = relForward / (dist || 1);
 
           dot.object3D.position.x = nx * scale;
           dot.object3D.position.y = nz * scale;
@@ -1889,12 +1928,12 @@
     });
 
     // RETÍCULA HOLOGRÁFICA VR CON PROFUNDIDAD DINÁMICA Y TELÉMETRO LÁSER DIGITAL
-    // Elimina el conflicto vergencia-acomodación y muestra la distancia exacta al objetivo estilo Action City.
+    // Punto láser ultra-fino y preciso con telémetro continuo, sin aros negros y sin fatiga ocular.
     AFRAME.registerComponent('dynamic-depth-reticle', {
       schema: {
-        maxDist: { default: 35.0 },
-        minDist: { default: 0.7 },
-        defaultDist: { default: 28.0 }
+        maxDist: { default: 30.0 },
+        minDist: { default: 1.0 },
+        defaultDist: { default: 2.8 } // Distancia focal óptica de descanso natural (2.8m)
       },
       init: function () {
         this.raycaster = new THREE.Raycaster();
@@ -1904,33 +1943,49 @@
         this.targetDist = 2.5;
         this.lastRayTime = 0;
         this.lastTextTime = 0;
-        this.materialsConfigured = false;
+        this.attachedToCam = false;
         this.cameraEl = this.el.closest('a-camera') || document.querySelector('a-camera');
         this.avatarEl = document.getElementById('avatar-container');
         this.rangeTextEl = document.getElementById('reticle-range-text');
         this._lastTextVal = '';
+
+        // Configurar materiales del círculo una sola vez para profundidad prioritaria
+        var circle = this.el.querySelector('a-circle');
+        if (circle) {
+          var setupCircleMat = function () {
+            var mesh = circle.getObject3D('mesh');
+            if (mesh && mesh.material) {
+              mesh.material.depthTest = false;
+              mesh.material.depthWrite = false;
+              mesh.material.transparent = true;
+              mesh.material.side = THREE.DoubleSide;
+              mesh.renderOrder = 99999;
+              mesh.material.needsUpdate = true;
+            }
+          };
+          circle.addEventListener('loaded', setupCircleMat);
+          setupCircleMat();
+        }
       },
       isIgnored: function (obj) {
         if (!obj) return true;
         if (!obj.visible) {
-          // Si es invisible, verificar si es una hitbox de NPC vivo
           var isNpcHitbox = obj.el && (obj.el.classList.contains('npc-body') || obj.el.classList.contains('npc-head'));
           if (isNpcHitbox) {
             var npcEl = obj.el.closest('[npc-ai]') || obj.el.parentEl;
             if (npcEl) {
               var ai = npcEl.components && npcEl.components['npc-ai'];
               if (!ai || ai.state === 'die' || (npcEl.object3D && !npcEl.object3D.visible)) {
-                return true; // NPC muerto u oculto durante respawn -> ignorar
+                return true;
               }
-              return false; // NPC vivo -> colisión válida para la mira
+              return false;
             }
           }
-          return true; // Cualquier otro objeto invisible se ignora
+          return true;
         }
         if (obj.type !== 'Mesh' && obj.type !== 'SkinnedMesh') return true;
         if (obj.name && (obj.name.includes('Line') || obj.name.includes('tracer') || obj.name.includes('hole'))) return true;
 
-        // Ignorar todo lo que pertenezca a la cámara (HUD, radar, la propia mira) o al avatar del jugador
         var curr = obj;
         while (curr) {
           if (curr === this.el.object3D) return true;
@@ -1941,66 +1996,6 @@
         return false;
       },
       tick: function (time, delta) {
-        // Configurar materiales para que NUNCA se oculte detrás de paredes o geometrías
-        if (!this.materialsConfigured) {
-          var meshCount = 0;
-          this.el.object3D.traverse(node => {
-            if (node.isMesh && node.material) {
-              meshCount++;
-              node.material.depthTest = false; // 100% visible siempre, nunca tapada
-              node.material.depthWrite = false;
-              node.material.transparent = true;
-              node.material.side = THREE.DoubleSide;
-              node.material.needsUpdate = true;
-              node.renderOrder = 99999;
-            }
-          });
-          if (meshCount >= 1) this.materialsConfigured = true;
-        }
-
-        // Raycasting cada ~35ms para máximo rendimiento en móviles
-        if (time - this.lastRayTime > 35) {
-          this.lastRayTime = time;
-          this.updateTargetDist();
-        }
-
-        // Suavizado cinemático fluido (Lerp a 60-90 FPS)
-        var dt = delta ? Math.min(delta, 100) : 16.6;
-        var lerpFactor = Math.min(1.0, 0.42 * (dt / 16.666));
-        this.currentDist += (this.targetDist - this.currentDist) * lerpFactor;
-
-        // Posicionar directamente a lo largo del eje focal de la cámara
-        this.el.object3D.position.set(0, 0, -this.currentDist);
-
-        // Escala con ligera curva de perspectiva (respiración óptica no lineal):
-        var s = Math.max(0.65, Math.pow(this.currentDist / 2.5, 0.88));
-        this.el.object3D.scale.set(s, s, s);
-
-        // Actualizar telémetro láser digital (distancia exacta en metros estilo Action City)
-        if (!this.rangeTextEl) this.rangeTextEl = document.getElementById('reticle-range-text');
-        if (this.rangeTextEl && (time - this.lastTextTime > 65)) {
-          this.lastTextTime = time;
-          var d = this.currentDist;
-          var txt = '';
-          var col = '#00ffcc';
-          if (d >= 27.0) {
-            txt = '>30m';
-            col = '#7799aa'; // Color tenue horizonte / cielo
-          } else if (d < 4.5) {
-            txt = d.toFixed(1) + 'm';
-            col = '#ff3344'; // Alerta roja proximidad CQB / peligro cuerpo a cuerpo
-          } else {
-            txt = d.toFixed(1) + 'm';
-            col = '#00ffcc'; // Verde-cian táctico
-          }
-          if (this._lastTextVal !== txt) {
-            this.rangeTextEl.setAttribute('value', txt);
-            this.rangeTextEl.setAttribute('color', col);
-            this._lastTextVal = txt;
-          }
-        }
-      },
-      updateTargetDist: function () {
         if (!this.cameraEl) {
           this.cameraEl = this.el.closest('a-camera') || document.querySelector('a-camera');
           if (!this.cameraEl) return;
@@ -2008,11 +2003,63 @@
         var camera3D = this.cameraEl.getObject3D('camera');
         if (!camera3D) return;
 
+        // Anclar a camera3D para orientación 1:1 sin desfase en VR
+        if (!this.attachedToCam) {
+          camera3D.add(this.el.object3D);
+          this.attachedToCam = true;
+        }
+
+        // Raycasting cada ~35ms
+        if (time - this.lastRayTime > 35) {
+          this.lastRayTime = time;
+          this.updateTargetDist(camera3D);
+        }
+
+        // Suavizado cinemático fluido (Lerp a 60-90 FPS)
+        var dt = delta ? Math.min(delta, 100) : 16.6;
+        var lerpFactor = Math.min(1.0, 0.42 * (dt / 16.666));
+        this.currentDist += (this.targetDist - this.currentDist) * lerpFactor;
+
+        // Posicionar directamente a lo largo del eje focal central de la cámara
+        this.el.object3D.position.set(0, 0, -this.currentDist);
+        this.el.object3D.rotation.set(0, 0, 0);
+
+        // Escala controlada y sutil: mantiene el punto fino, nítido y sin deformaciones
+        var s = Math.min(1.25, Math.max(0.75, Math.pow(this.currentDist / 2.5, 0.45)));
+        this.el.object3D.scale.set(s, s, s);
+
+        // Actualizar telémetro láser digital (distancia exacta permanentemente visible)
+        if (!this.rangeTextEl) this.rangeTextEl = document.getElementById('reticle-range-text');
+        if (this.rangeTextEl && (time - this.lastTextTime > 50)) {
+          this.lastTextTime = time;
+          var d = this.currentDist;
+          var txt = '';
+          var col = '#00ffcc';
+          if (d >= 20.0) {
+            txt = '>20m';
+            col = '#7799aa'; // Color tenue horizonte / cielo
+          } else if (d < 3.0) {
+            txt = d.toFixed(1) + 'm';
+            col = '#ff3344'; // Alerta roja proximidad CQB / peligro cuerpo a cuerpo
+          } else {
+            txt = d.toFixed(1) + 'm';
+            col = '#00ffcc'; // Verde-cian táctico
+          }
+
+          var textMesh = this.rangeTextEl.getObject3D('mesh');
+          if (this._lastTextVal !== txt || !textMesh) {
+            this.rangeTextEl.setAttribute('value', txt);
+            this.rangeTextEl.setAttribute('color', col);
+            if (textMesh) this._lastTextVal = txt;
+          }
+        }
+      },
+      updateTargetDist: function (camera3D) {
         camera3D.getWorldPosition(this.origin);
         this.direction.set(0, 0, -1).transformDirection(camera3D.matrixWorld);
 
         this.raycaster.set(this.origin, this.direction);
-        this.raycaster.far = this.data.maxDist + 5;
+        this.raycaster.far = this.data.maxDist;
 
         var scene = this.el.sceneEl;
         if (!scene || !scene.object3D) return;
@@ -2022,17 +2069,27 @@
 
         for (var i = 0; i < intersects.length; i++) {
           var hit = intersects[i];
-          if (!this.isIgnored(hit.object)) {
-            foundHit = hit;
-            break;
+          if (this.isIgnored(hit.object)) continue;
+
+          // Ignorar colisiones a quemarropa con el propio cuerpo (< 0.9m)
+          if (hit.distance < 0.9) continue;
+
+          // Ignorar el suelo si se mira horizontalmente pero el rayo roza los pies
+          if (hit.face && hit.face.normal && hit.face.normal.y > 0.85) {
+            if (hit.point.y < this.origin.y - 1.1 && hit.distance < 1.8) {
+              continue;
+            }
           }
+
+          foundHit = hit;
+          break;
         }
 
         if (foundHit) {
-          // Separación de 8cm frente a la superficie impactada para evitar z-fighting
-          this.targetDist = Math.max(this.data.minDist, foundHit.distance - 0.08);
+          // Separación limpia frente a la superficie impactada
+          this.targetDist = Math.max(this.data.minDist, foundHit.distance - 0.05);
         } else {
-          // Mirando al cielo o al horizonte lejano: descanso ocular en infinito óptico
+          // Descanso ocular en plano focal óptico natural (2.8m, cero bizqueo)
           this.targetDist = this.data.defaultDist;
         }
       }
@@ -3308,12 +3365,12 @@
             <!-- CÁMARA HÍBRIDA (3ra Persona sobre el hombro por defecto, 1ra persona pura al entrar a VR) -->
             <a-camera position="0 1.6 0" look-controls="enabled: false; magicWindowTrackingEnabled: false; pointerLockEnabled: false"
               wasd-controls="enabled: false">
-              <!-- MIRA TÁCTICA LÁSER CON TELÉMETRO DIGITAL (PUNTO ROJO VISIBLE Y TELÉMETRO) -->
+              <!-- MIRA TÁCTICA LÁSER CON TELÉMETRO DIGITAL -->
               <a-entity id="vr-dynamic-reticle" dynamic-depth-reticle position="0 0 -2.5">
-                <!-- Punto láser rojo limpio, visible, nítido y de tamaño óptimo -->
-                <a-circle radius="0.026" material="color: #ff1111; shader: flat; side: double; depthTest: false; transparent: true; opacity: 1.0" position="0 0 0.001"></a-circle>
-                <!-- Telémetro digital debajo: distancia exacta estilo Action City -->
-                <a-text id="reticle-range-text" value="--m" align="center" position="0 -0.045 0" width="1.6"
+                <!-- Punto láser rojo ultra fino, limpio y preciso (sin aros ni marcos) -->
+                <a-circle radius="0.007" material="color: #ff1111; shader: flat; side: double; depthTest: false; transparent: true; opacity: 1.0" position="0 0 0.001"></a-circle>
+                <!-- Telémetro digital debajo: distancia exacta continua -->
+                <a-text id="reticle-range-text" value="2.5m" align="center" position="0 -0.026 0" width="1.3"
                   color="#00ffcc" font="dejavu" opacity="0.95" material="depthTest: false"></a-text>
               </a-entity>
               <!-- SENSOR TÁCTICO DE 5 PUNTOS (SOLO PUNTOS: CERO FONDOS, CERO AROS) -->

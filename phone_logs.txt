@@ -1069,3 +1069,276 @@
 [5:23:34 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
 [5:23:34 p.m.] [WARN] THREE.WebGLRenderer: Can't change size while VR device is presenting.
 [5:23:34 p.m.] [WARN] THREE.WebGLRenderer: Can't change size while VR device is presenting.
+
+================ LOGS RECIBIDOS (16/10/2026, 5:48:30 p. m.) ================
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.73s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.86s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.93s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.94s
+[5:47:18 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[5:47:18 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=1.21s
+[5:47:18 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[5:47:18 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[5:47:18 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[5:47:18 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[5:47:18 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[5:48:02 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:48:02 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:48:03 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[5:48:03 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[5:48:12 p.m.] DIAGNÓSTICO EJES: [0.00, 0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+
+================ LOGS RECIBIDOS (16/10/2026, 5:53:44 p. m.) ================
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.73s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.86s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.93s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.94s
+[5:47:18 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[5:47:18 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=1.21s
+[5:47:18 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[5:47:18 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[5:47:18 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[5:47:18 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[5:47:18 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[5:48:02 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:48:02 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:48:03 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[5:48:03 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[5:48:12 p.m.] DIAGNÓSTICO EJES: [0.00, 0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[5:48:28 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+[5:50:07 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:50:07 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:08 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:08 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:08 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:08 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:50 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:50:50 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:50:51 p.m.] [INFO] [VR OPTICA] Offset: -0.005 Nivel: -11
+[5:50:51 p.m.] [INFO] [VR OPTICA] Offset: 0.010 Nivel: -10
+[5:50:51 p.m.] [INFO] [VR OPTICA] Offset: 0.025 Nivel: -9
+[5:50:51 p.m.] [INFO] [VR OPTICA] Offset: 0.040 Nivel: -8
+[5:50:51 p.m.] [INFO] [VR OPTICA] Offset: 0.055 Nivel: -7
+[5:50:54 p.m.] [INFO] [VR OPTICA] Offset: 0.040 Nivel: -8
+[5:50:54 p.m.] [INFO] [VR OPTICA] Offset: 0.025 Nivel: -9
+[5:50:55 p.m.] [INFO] [VR OPTICA] Offset: 0.010 Nivel: -10
+[5:50:55 p.m.] [INFO] [VR OPTICA] Offset: -0.005 Nivel: -11
+[5:50:55 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:50:56 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:50:56 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:56 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:56 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:57 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:59 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:59 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:00 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:51:03 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:03 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:03 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:04 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:04 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:06 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:07 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:07 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:07 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:11 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:11 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:51:11 p.m.] [INFO] [VR OPTICA] Offset: -0.005 Nivel: -11
+[5:51:12 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:51:12 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:12 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:12 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:12 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:14 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:14 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:16 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:16 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:51:16 p.m.] [INFO] [VR OPTICA] Offset: -0.005 Nivel: -11
+[5:51:16 p.m.] [INFO] [VR OPTICA] Offset: 0.010 Nivel: -10
+[5:51:16 p.m.] [INFO] [VR OPTICA] Offset: 0.025 Nivel: -9
+[5:51:17 p.m.] [INFO] [VR OPTICA] Offset: 0.040 Nivel: -8
+[5:51:17 p.m.] [INFO] [VR OPTICA] Offset: 0.055 Nivel: -7
+[5:51:17 p.m.] [INFO] [VR OPTICA] Offset: 0.070 Nivel: -6
+[5:51:18 p.m.] [INFO] [VR OPTICA] Offset: 0.085 Nivel: -5
+[5:51:18 p.m.] [INFO] [VR OPTICA] Offset: 0.100 Nivel: -4
+[5:51:18 p.m.] [INFO] [VR OPTICA] Offset: 0.115 Nivel: -3
+[5:51:19 p.m.] [INFO] [VR OPTICA] Offset: 0.130 Nivel: -2
+[5:51:19 p.m.] [INFO] [VR OPTICA] Offset: 0.145 Nivel: -1
+[5:51:19 p.m.] [INFO] [VR OPTICA] Offset: 0.160 Nivel: 0
+[5:51:19 p.m.] [INFO] [VR OPTICA] Offset: 0.175 Nivel: +1
+[5:51:20 p.m.] [INFO] [VR OPTICA] Offset: 0.160 Nivel: 0
+[5:51:24 p.m.] [INFO] [VR OPTICA] Offset: 0.145 Nivel: -1
+[5:51:24 p.m.] [INFO] [VR OPTICA] Offset: 0.130 Nivel: -2
+[5:51:24 p.m.] [INFO] [VR OPTICA] Offset: 0.115 Nivel: -3
+[5:51:24 p.m.] [INFO] [VR OPTICA] Offset: 0.100 Nivel: -4
+[5:51:24 p.m.] [INFO] [VR OPTICA] Offset: 0.085 Nivel: -5
+[5:51:25 p.m.] [INFO] [VR OPTICA] Offset: 0.070 Nivel: -6
+[5:51:25 p.m.] [INFO] [VR OPTICA] Offset: 0.055 Nivel: -7
+[5:51:25 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -3.08 BOTONES: [14(1.00)]
+[5:51:25 p.m.] [INFO] [VR OPTICA] Offset: 0.040 Nivel: -8
+[5:51:25 p.m.] [INFO] [VR OPTICA] Offset: 0.025 Nivel: -9
+[5:51:25 p.m.] [INFO] [VR OPTICA] Offset: 0.010 Nivel: -10
+[5:51:26 p.m.] [INFO] [VR OPTICA] Offset: -0.005 Nivel: -11
+[5:51:26 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:51:26 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:26 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:26 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:27 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:34 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:53:12 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -3.08 BOTONES: [6(1.00)]
+
+================ LOGS RECIBIDOS (16/10/2026, 5:53:46 p. m.) ================
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.73s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.86s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.93s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.94s
+[5:47:17 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.94s
+[5:47:18 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[5:47:18 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=1.21s
+[5:47:18 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[5:47:18 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[5:47:18 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[5:47:18 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[5:47:18 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[5:48:02 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:48:02 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[5:48:03 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[5:48:03 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[5:48:12 p.m.] DIAGNÓSTICO EJES: [0.00, 0.00, 0.00, 0.00] ALTURA: -2.89 BOTONES: [6(1.00)]
+[5:48:28 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+[5:50:07 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:50:07 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:08 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:08 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:08 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:08 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:50 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:50:50 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:50:51 p.m.] [INFO] [VR OPTICA] Offset: -0.005 Nivel: -11
+[5:50:51 p.m.] [INFO] [VR OPTICA] Offset: 0.010 Nivel: -10
+[5:50:51 p.m.] [INFO] [VR OPTICA] Offset: 0.025 Nivel: -9
+[5:50:51 p.m.] [INFO] [VR OPTICA] Offset: 0.040 Nivel: -8
+[5:50:51 p.m.] [INFO] [VR OPTICA] Offset: 0.055 Nivel: -7
+[5:50:54 p.m.] [INFO] [VR OPTICA] Offset: 0.040 Nivel: -8
+[5:50:54 p.m.] [INFO] [VR OPTICA] Offset: 0.025 Nivel: -9
+[5:50:55 p.m.] [INFO] [VR OPTICA] Offset: 0.010 Nivel: -10
+[5:50:55 p.m.] [INFO] [VR OPTICA] Offset: -0.005 Nivel: -11
+[5:50:55 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:50:56 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:50:56 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:56 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:56 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:57 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:59 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:50:59 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:00 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:51:03 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:03 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:03 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:04 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:04 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:06 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:07 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:07 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:07 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:11 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:11 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:51:11 p.m.] [INFO] [VR OPTICA] Offset: -0.005 Nivel: -11
+[5:51:12 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:51:12 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:12 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:12 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:12 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:14 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:14 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:16 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:16 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:51:16 p.m.] [INFO] [VR OPTICA] Offset: -0.005 Nivel: -11
+[5:51:16 p.m.] [INFO] [VR OPTICA] Offset: 0.010 Nivel: -10
+[5:51:16 p.m.] [INFO] [VR OPTICA] Offset: 0.025 Nivel: -9
+[5:51:17 p.m.] [INFO] [VR OPTICA] Offset: 0.040 Nivel: -8
+[5:51:17 p.m.] [INFO] [VR OPTICA] Offset: 0.055 Nivel: -7
+[5:51:17 p.m.] [INFO] [VR OPTICA] Offset: 0.070 Nivel: -6
+[5:51:18 p.m.] [INFO] [VR OPTICA] Offset: 0.085 Nivel: -5
+[5:51:18 p.m.] [INFO] [VR OPTICA] Offset: 0.100 Nivel: -4
+[5:51:18 p.m.] [INFO] [VR OPTICA] Offset: 0.115 Nivel: -3
+[5:51:19 p.m.] [INFO] [VR OPTICA] Offset: 0.130 Nivel: -2
+[5:51:19 p.m.] [INFO] [VR OPTICA] Offset: 0.145 Nivel: -1
+[5:51:19 p.m.] [INFO] [VR OPTICA] Offset: 0.160 Nivel: 0
+[5:51:19 p.m.] [INFO] [VR OPTICA] Offset: 0.175 Nivel: +1
+[5:51:20 p.m.] [INFO] [VR OPTICA] Offset: 0.160 Nivel: 0
+[5:51:24 p.m.] [INFO] [VR OPTICA] Offset: 0.145 Nivel: -1
+[5:51:24 p.m.] [INFO] [VR OPTICA] Offset: 0.130 Nivel: -2
+[5:51:24 p.m.] [INFO] [VR OPTICA] Offset: 0.115 Nivel: -3
+[5:51:24 p.m.] [INFO] [VR OPTICA] Offset: 0.100 Nivel: -4
+[5:51:24 p.m.] [INFO] [VR OPTICA] Offset: 0.085 Nivel: -5
+[5:51:25 p.m.] [INFO] [VR OPTICA] Offset: 0.070 Nivel: -6
+[5:51:25 p.m.] [INFO] [VR OPTICA] Offset: 0.055 Nivel: -7
+[5:51:25 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -3.08 BOTONES: [14(1.00)]
+[5:51:25 p.m.] [INFO] [VR OPTICA] Offset: 0.040 Nivel: -8
+[5:51:25 p.m.] [INFO] [VR OPTICA] Offset: 0.025 Nivel: -9
+[5:51:25 p.m.] [INFO] [VR OPTICA] Offset: 0.010 Nivel: -10
+[5:51:26 p.m.] [INFO] [VR OPTICA] Offset: -0.005 Nivel: -11
+[5:51:26 p.m.] [INFO] [VR OPTICA] Offset: -0.020 Nivel: -12
+[5:51:26 p.m.] [INFO] [VR OPTICA] Offset: -0.035 Nivel: -13
+[5:51:26 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:26 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:27 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:51:34 p.m.] [INFO] [VR OPTICA] Offset: -0.050 Nivel: -14
+[5:53:12 p.m.] DIAGNÓSTICO EJES: [0.00, -0.00, 0.00, 0.00] ALTURA: -3.08 BOTONES: [6(1.00)]
+[5:53:42 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+
+================ LOGS RECIBIDOS (16/10/2026, 6:07:03 p. m.) ================
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.59s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.68s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.77s
+[6:06:05 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[6:06:05 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=1.08s
+[6:06:05 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[6:06:06 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[6:06:06 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[6:06:06 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[6:06:06 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+
+================ LOGS RECIBIDOS (16/10/2026, 6:07:44 p. m.) ================
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: edificio en t=0.59s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: rifle-model en t=0.68s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-fire en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-prone en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-walk en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-run en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-back en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-idle en t=0.76s
+[6:06:05 p.m.] [INFO] [PERF] Asset cargado: avatar-jump en t=0.77s
+[6:06:05 p.m.] [WARN] THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.
+[6:06:05 p.m.] [INFO] [PERF] TODOS los assets descargados y parseados en t=1.08s
+[6:06:05 p.m.] [INFO] [SPAWN] Avatar Rig spawn coordinates: X=0.00, Y=0.00, Z=0.00
+[6:06:06 p.m.] [INFO] [PERF] Resolución 720p activada. DPR: 1
+[6:06:06 p.m.] [INFO] [VR] Calibrador óptico y Corrección de Aspecto 1:1 activados en WebXR.
+[6:06:06 p.m.] [INFO] [WARMUP] Forzando compilación de shaders para evitar tirones...
+[6:06:06 p.m.] [INFO] [WARMUP] Shaders compilados exitosamente. Juego fluido.
+[6:07:01 p.m.] [INPUT] Logs enviados a PC mediante botón SELECT
+[6:07:16 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[6:07:16 p.m.] [ERROR] THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Canvas has an existing context of a different type
+[6:07:17 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
+[6:07:17 p.m.] [INFO] [VR] Modo VR Activo: Avatar 100% oculto y cámara fijada en 0, 0, 0
